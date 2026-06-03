@@ -105,10 +105,11 @@ tr:nth-child(even) td { background: var(--bg); }
     <div class="score-card"><div class="score-num" id="streak-count">0</div><div class="score-lbl">Reeks</div></div>
   </div>
 
-  <div class="level-tabs">
+  <div class="level-tabs" id="niveau-tabs">
     <button class="level-btn active" onclick="setLevel(1)">Niveau 1<br><small style="font-size:10px;opacity:0.7">Prime–Kwart</small></button>
     <button class="level-btn" onclick="setLevel(2)">Niveau 2<br><small style="font-size:10px;opacity:0.7">t.e.m. Sixt</small></button>
     <button class="level-btn" onclick="setLevel(3)">Niveau 3<br><small style="font-size:10px;opacity:0.7">Alle intervallen</small></button>
+    <button class="level-btn" onclick="setLevel(4)">Niveau 4<br><small style="font-size:10px;opacity:0.7">Mol &amp; Kruis</small></button>
   </div>
 
   <div class="level-tabs" style="margin-bottom:1.25rem">
@@ -152,23 +153,50 @@ tr:nth-child(even) td { background: var(--bg); }
 </div>
 
 <script>
-// Notes on the staff: each index = one diatonic step from C4
-// staffPos: 0=C4(Do), 1=D4, 2=E4, 3=F4, 4=G4, 5=A4, 6=B4, 7=C5, 8=D5, 9=E5, 10=F5
-// We draw treble clef staff, lines at positions for E4,G4,B4,D5,F5
-// Visual y: C4 sits just below bottom line (ledger line), E4 on line1, G4 on line2 etc.
-
 const NOTES = [
-  { name: "Do",  oct: 4, semitone: 0,  staffPos: 0  }, // C4
-  { name: "Re",  oct: 4, semitone: 2,  staffPos: 1  }, // D4
-  { name: "Mi",  oct: 4, semitone: 4,  staffPos: 2  }, // E4
-  { name: "Fa",  oct: 4, semitone: 5,  staffPos: 3  }, // F4
-  { name: "Sol", oct: 4, semitone: 7,  staffPos: 4  }, // G4
-  { name: "La",  oct: 4, semitone: 9,  staffPos: 5  }, // A4
-  { name: "Si",  oct: 4, semitone: 11, staffPos: 6  }, // B4
-  { name: "Do",  oct: 5, semitone: 12, staffPos: 7  }, // C5
-  { name: "Re",  oct: 5, semitone: 14, staffPos: 8  }, // D5
-  { name: "Mi",  oct: 5, semitone: 16, staffPos: 9  }, // E5
-  { name: "Fa",  oct: 5, semitone: 17, staffPos: 10 }, // F5
+  { name: "Do",  oct: 4, semitone: 0,  staffPos: 0  },
+  { name: "Re",  oct: 4, semitone: 2,  staffPos: 1  },
+  { name: "Mi",  oct: 4, semitone: 4,  staffPos: 2  },
+  { name: "Fa",  oct: 4, semitone: 5,  staffPos: 3  },
+  { name: "Sol", oct: 4, semitone: 7,  staffPos: 4  },
+  { name: "La",  oct: 4, semitone: 9,  staffPos: 5  },
+  { name: "Si",  oct: 4, semitone: 11, staffPos: 6  },
+  { name: "Do",  oct: 5, semitone: 12, staffPos: 7  },
+  { name: "Re",  oct: 5, semitone: 14, staffPos: 8  },
+  { name: "Mi",  oct: 5, semitone: 16, staffPos: 9  },
+  { name: "Fa",  oct: 5, semitone: 17, staffPos: 10 },
+];
+
+// Chromatische startnoten voor niveau 4
+const CHROMATIC_ROOTS = [
+  { name: "Do kruis", semitone: 1,  staffPos: 0, accidental: "#" },
+  { name: "Mi mol",   semitone: 3,  staffPos: 2, accidental: "b" },
+  { name: "Fa kruis", semitone: 6,  staffPos: 3, accidental: "#" },
+  { name: "La mol",   semitone: 8,  staffPos: 5, accidental: "b" },
+  { name: "Si mol",   semitone: 10, staffPos: 6, accidental: "b" },
+];
+
+// Volledige chromatische nootopslag geïndexeerd op halve tonen (0–18)
+const NOTE_BY_SEMITONE = [
+  { name: "Do",              staffPos: 0,  accidental: null }, // 0
+  { name: "Do kruis",        staffPos: 0,  accidental: "#"  }, // 1
+  { name: "Re",              staffPos: 1,  accidental: null }, // 2
+  { name: "Mi mol",          staffPos: 2,  accidental: "b"  }, // 3
+  { name: "Mi",              staffPos: 2,  accidental: null }, // 4
+  { name: "Fa",              staffPos: 3,  accidental: null }, // 5
+  { name: "Fa kruis",        staffPos: 3,  accidental: "#"  }, // 6
+  { name: "Sol",             staffPos: 4,  accidental: null }, // 7
+  { name: "La mol",          staffPos: 5,  accidental: "b"  }, // 8
+  { name: "La",              staffPos: 5,  accidental: null }, // 9
+  { name: "Si mol",          staffPos: 6,  accidental: "b"  }, // 10
+  { name: "Si",              staffPos: 6,  accidental: null }, // 11
+  { name: "Do (hoog)",       staffPos: 7,  accidental: null }, // 12
+  { name: "Do kruis (hoog)", staffPos: 7,  accidental: "#"  }, // 13
+  { name: "Re (hoog)",       staffPos: 8,  accidental: null }, // 14
+  { name: "Mi mol (hoog)",   staffPos: 9,  accidental: "b"  }, // 15
+  { name: "Mi (hoog)",       staffPos: 9,  accidental: null }, // 16
+  { name: "Fa (hoog)",       staffPos: 10, accidental: null }, // 17
+  { name: "Fa kruis (hoog)", staffPos: 10, accidental: "#"  }, // 18
 ];
 
 // Intervals per level
@@ -205,7 +233,22 @@ const INTERVALS_BY_LEVEL = {
     { name: "Kleine septiem", short: "m7",  steps: 6, semitones: 10 },
     { name: "Grote septiem",  short: "M7",  steps: 6, semitones: 11 },
     { name: "Reine octaaf",   short: "P8",  steps: 7, semitones: 12 },
-  ]
+  ],
+  4: [
+    { name: "Reine prime",    short: "P1",  semitones: 0  },
+    { name: "Kleine secunde", short: "m2",  semitones: 1  },
+    { name: "Grote secunde",  short: "M2",  semitones: 2  },
+    { name: "Kleine terts",   short: "m3",  semitones: 3  },
+    { name: "Grote terts",    short: "M3",  semitones: 4  },
+    { name: "Reine kwart",    short: "P4",  semitones: 5  },
+    { name: "Tritonus",       short: "TT",  semitones: 6  },
+    { name: "Reine kwint",    short: "P5",  semitones: 7  },
+    { name: "Kleine sixt",    short: "m6",  semitones: 8  },
+    { name: "Grote sixt",     short: "M6",  semitones: 9  },
+    { name: "Kleine septiem", short: "m7",  semitones: 10 },
+    { name: "Grote septiem",  short: "M7",  semitones: 11 },
+    { name: "Reine octaaf",   short: "P8",  semitones: 12 },
+  ],
 };
 
 // Staff drawing constants
@@ -220,10 +263,10 @@ function staffY(pos) {
   return BOTTOM_LINE_Y - (pos - 2) * (LINE_SPACING / 2);
 }
 
-function drawStaff(note1idx, note2idx, showNote2) {
+function drawStaff(note1, note2, showNote2) {
+  // note1, note2 zijn nootobjecten: { staffPos, name, accidental }
   const svg = document.getElementById("staff-svg");
   svg.innerHTML = "";
-
   const ns = "http://www.w3.org/2000/svg";
 
   function el(tag, attrs) {
@@ -232,14 +275,11 @@ function drawStaff(note1idx, note2idx, showNote2) {
     return e;
   }
 
-  // Staff lines (E4=pos2, G4=pos4, B4=pos6, D5=pos8, F5=pos10)
-  const linePositions = [2, 4, 6, 8, 10];
-  for (const lp of linePositions) {
+  for (const lp of [2, 4, 6, 8, 10]) {
     const y = staffY(lp);
     svg.appendChild(el("line", { x1: STAFF_LEFT, y1: y, x2: STAFF_RIGHT, y2: y, stroke: "#5a3e20", "stroke-width": "1" }));
   }
 
-  // Treble clef (simplified text symbol)
   const clefText = document.createElementNS(ns, "text");
   clefText.setAttribute("x", "14");
   clefText.setAttribute("y", String(staffY(6) + 6));
@@ -249,97 +289,65 @@ function drawStaff(note1idx, note2idx, showNote2) {
   clefText.textContent = "𝄞";
   svg.appendChild(clefText);
 
-  // Draw a note at staffPos
-  function drawNote(pos, xCenter, color, showLabel) {
+  function drawNote(pos, xCenter, color, showLabel, accidental, labelText) {
     const y = staffY(pos);
 
-    // Ledger lines if needed
-    // Below staff: pos < 2 (C4=0, D4=1 need ledger)
-    // Above staff: pos > 10
-    if (pos <= 0) {
-      // C4 needs ledger line at pos 0
-      svg.appendChild(el("line", { x1: xCenter-12, y1: staffY(0), x2: xCenter+12, y2: staffY(0), stroke: "#5a3e20", "stroke-width": "1" }));
-    }
-    if (pos <= -2) {
-      svg.appendChild(el("line", { x1: xCenter-12, y1: staffY(-2), x2: xCenter+12, y2: staffY(-2), stroke: "#5a3e20", "stroke-width": "1" }));
-    }
-    if (pos >= 12) {
-      svg.appendChild(el("line", { x1: xCenter-12, y1: staffY(12), x2: xCenter+12, y2: staffY(12), stroke: "#5a3e20", "stroke-width": "1" }));
+    if (pos <= 0)  svg.appendChild(el("line", { x1: xCenter-12, y1: staffY(0),  x2: xCenter+12, y2: staffY(0),  stroke: "#5a3e20", "stroke-width": "1" }));
+    if (pos <= -2) svg.appendChild(el("line", { x1: xCenter-12, y1: staffY(-2), x2: xCenter+12, y2: staffY(-2), stroke: "#5a3e20", "stroke-width": "1" }));
+    if (pos >= 12) svg.appendChild(el("line", { x1: xCenter-12, y1: staffY(12), x2: xCenter+12, y2: staffY(12), stroke: "#5a3e20", "stroke-width": "1" }));
+
+    if (accidental) {
+      const acc = document.createElementNS(ns, "text");
+      acc.setAttribute("x", String(xCenter - 15));
+      acc.setAttribute("y", String(y + 4));
+      acc.setAttribute("text-anchor", "middle");
+      acc.setAttribute("font-size", "13");
+      acc.setAttribute("fill", color);
+      acc.textContent = accidental === "#" ? "♯" : "♭";
+      svg.appendChild(acc);
     }
 
-    // Note head (ellipse)
-    const noteHead = el("ellipse", {
-      cx: xCenter, cy: y,
-      rx: "8", ry: "6",
-      fill: color,
-      transform: `rotate(-15, ${xCenter}, ${y})`
-    });
-    svg.appendChild(noteHead);
+    svg.appendChild(el("ellipse", { cx: xCenter, cy: y, rx: "8", ry: "6", fill: color, transform: `rotate(-15, ${xCenter}, ${y})` }));
 
-    // Stem
-    const stemDir = pos < 6 ? -1 : 1; // up if below middle, down if above
+    const stemDir = pos < 6 ? -1 : 1;
     const stemX = stemDir === -1 ? xCenter + 7 : xCenter - 7;
-    const stemY1 = y;
-    const stemY2 = y + stemDir * 32;
-    svg.appendChild(el("line", { x1: stemX, y1: stemY1, x2: stemX, y2: stemY2, stroke: color, "stroke-width": "1.5" }));
+    svg.appendChild(el("line", { x1: stemX, y1: y, x2: stemX, y2: y + stemDir * 32, stroke: color, "stroke-width": "1.5" }));
 
-    // Note name label below
     if (showLabel) {
-      const label = document.createElementNS(ns, "text");
-      label.setAttribute("x", String(xCenter));
-      label.setAttribute("y", String(SVG_H - 4));
-      label.setAttribute("text-anchor", "middle");
-      label.setAttribute("font-size", "12");
-      label.setAttribute("font-family", "Source Sans 3, sans-serif");
-      label.setAttribute("fill", color);
-      label.setAttribute("font-weight", "500");
-      label.textContent = NOTES[pos] ? NOTES[pos].name : "";
-      svg.appendChild(label);
+      const lbl = document.createElementNS(ns, "text");
+      lbl.setAttribute("x", String(xCenter));
+      lbl.setAttribute("y", String(SVG_H - 4));
+      lbl.setAttribute("text-anchor", "middle");
+      lbl.setAttribute("font-size", "12");
+      lbl.setAttribute("font-family", "Source Sans 3, sans-serif");
+      lbl.setAttribute("fill", color);
+      lbl.setAttribute("font-weight", "500");
+      lbl.textContent = labelText || "";
+      svg.appendChild(lbl);
     }
   }
 
-  // Note 1 (always shown)
-  drawNote(note1idx, 110, "#5a3e20", true);
+  drawNote(note1.staffPos, 110, "#5a3e20", true, note1.accidental || null, note1.name);
 
-  // Note 2
   if (showNote2) {
-    drawNote(note2idx, 210, "#8b4513", true);
+    drawNote(note2.staffPos, 210, "#8b4513", true, note2.accidental || null, note2.name);
   } else {
-    // Show question mark note
-    const y = staffY(note2idx);
-    if (note2idx <= 0) {
-      const ns2 = "http://www.w3.org/2000/svg";
-      const ll = document.createElementNS(ns2, "line");
-      ll.setAttribute("x1", "198"); ll.setAttribute("y1", String(staffY(0)));
-      ll.setAttribute("x2", "222"); ll.setAttribute("y2", String(staffY(0)));
-      ll.setAttribute("stroke", "#5a3e20"); ll.setAttribute("stroke-width", "1");
-      svg.appendChild(ll);
+    const y = staffY(note2.staffPos);
+    if (note2.staffPos <= 0) {
+      svg.appendChild(el("line", { x1: "198", y1: String(staffY(0)), x2: "222", y2: String(staffY(0)), stroke: "#5a3e20", "stroke-width": "1" }));
     }
-    const qHead = el("ellipse", {
-      cx: "210", cy: String(y),
-      rx: "8", ry: "6",
-      fill: "none",
-      stroke: "#b0a080",
-      "stroke-width": "1.5",
-      "stroke-dasharray": "3 2",
-      transform: `rotate(-15, 210, ${y})`
-    });
-    svg.appendChild(qHead);
+    svg.appendChild(el("ellipse", { cx: "210", cy: String(y), rx: "8", ry: "6", fill: "none", stroke: "#b0a080", "stroke-width": "1.5", "stroke-dasharray": "3 2", transform: `rotate(-15, 210, ${y})` }));
     const qMark = document.createElementNS(ns, "text");
-    qMark.setAttribute("x", "210");
-    qMark.setAttribute("y", String(SVG_H - 4));
-    qMark.setAttribute("text-anchor", "middle");
-    qMark.setAttribute("font-size", "12");
-    qMark.setAttribute("font-family", "Source Sans 3, sans-serif");
-    qMark.setAttribute("fill", "#b0a080");
+    qMark.setAttribute("x", "210"); qMark.setAttribute("y", String(SVG_H - 4));
+    qMark.setAttribute("text-anchor", "middle"); qMark.setAttribute("font-size", "12");
+    qMark.setAttribute("font-family", "Source Sans 3, sans-serif"); qMark.setAttribute("fill", "#b0a080");
     qMark.textContent = "?";
     svg.appendChild(qMark);
   }
 
-  // Bracket / line between notes
   if (showNote2) {
-    const y1 = staffY(note1idx) - 22;
-    const y2 = staffY(note2idx) - 22;
+    const y1 = staffY(note1.staffPos) - 22;
+    const y2 = staffY(note2.staffPos) - 22;
     const yTop = Math.min(y1, y2) - 6;
     svg.appendChild(el("line", { x1: "110", y1: String(yTop), x2: "210", y2: String(yTop), stroke: "#c0a070", "stroke-width": "1", "stroke-dasharray": "4 2" }));
     svg.appendChild(el("line", { x1: "110", y1: String(yTop), x2: "110", y2: String(yTop + 6), stroke: "#c0a070", "stroke-width": "1" }));
@@ -356,7 +364,7 @@ let currentAnswer = "";
 
 function setLevel(l) {
   level = l;
-  document.querySelectorAll(".level-btn").forEach((b, i) => b.classList.toggle("active", i+1 === l));
+  document.querySelectorAll("#niveau-tabs .level-btn").forEach((b, i) => b.classList.toggle("active", i + 1 === l));
   nextQuestion();
 }
 
@@ -383,6 +391,44 @@ function nextQuestion() {
   document.getElementById("feedback").style.display = "none";
   document.getElementById("next-btn").style.display = "none";
   document.getElementById("q-text").style.display = "none";
+
+  // Niveau 4: chromatische startnoten, enkel "benoem het interval"
+  if (level === 4) {
+    const intervals = INTERVALS_BY_LEVEL[4];
+    let root, interval, secondNote;
+    let attempts = 0;
+    do {
+      root = CHROMATIC_ROOTS[Math.floor(Math.random() * CHROMATIC_ROOTS.length)];
+      interval = intervals[Math.floor(Math.random() * intervals.length)];
+      const st = root.semitone + interval.semitones;
+      secondNote = st < NOTE_BY_SEMITONE.length ? NOTE_BY_SEMITONE[st] : null;
+      attempts++;
+    } while (!secondNote && attempts < 100);
+
+    if (!secondNote) { nextQuestion(); return; }
+
+    currentAnswer = interval.name;
+    document.getElementById("q-type-badge").textContent = "Benoem het interval";
+    document.getElementById("q-label").textContent =
+      `Welk interval hoor je tussen ${root.name} en ${secondNote.name}?`;
+
+    drawStaff(root, secondNote, true);
+
+    const wrongs4 = shuffle(intervals.filter(i => i.name !== interval.name)).slice(0, 3);
+    const opts4 = shuffle([interval, ...wrongs4]);
+    const grid4 = document.getElementById("options");
+    grid4.innerHTML = "";
+    opts4.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.className = "opt-btn";
+      btn.innerHTML = `<strong>${opt.name}</strong><br><span style="font-size:11px;color:var(--text-muted)">${opt.semitones} halve tonen</span>`;
+      btn.onclick = () => checkAnswer(opt.name, btn);
+      grid4.appendChild(btn);
+    });
+
+    document.getElementById("progress").textContent = `Vraag ${qCount}`;
+    return;
+  }
 
   const intervals = INTERVALS_BY_LEVEL[level];
   // Decide mode: name-the-interval or find-the-note
@@ -416,7 +462,7 @@ function nextQuestion() {
     document.getElementById("q-label").textContent =
       `Welk interval hoor je tussen ${NOTES[rootIdx].name} en ${NOTES[secondIdx].name}?`;
 
-    drawStaff(rootIdx, secondIdx, true);
+    drawStaff(NOTES[rootIdx], NOTES[secondIdx], true);
 
     // Options: correct + 3 wrong
     const wrongs = shuffle(intervals.filter(i => i.name !== interval.name)).slice(0, 3);
@@ -458,7 +504,7 @@ function nextQuestion() {
     document.getElementById("q-label").textContent =
       `Vanaf ${NOTES[rootIdx].name}: welke noot is een ${interval.name} hoger?`;
 
-    drawStaff(rootIdx, secondIdx, false);
+    drawStaff(NOTES[rootIdx], NOTES[secondIdx], false);
 
     // Options: note names, pick wrong ones (different step positions)
     const allPossible = [];
