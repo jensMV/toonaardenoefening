@@ -450,7 +450,7 @@ function nextQuestion() {
       nextQuestion(); return;
     }
 
-    currentAnswer = NOTES[secondIdx].name + (NOTES[secondIdx].oct === 5 ? " (hoog)" : "");
+    currentAnswer = NOTES[secondIdx].name + (NOTES[secondIdx].oct === 5 ? " (kruis)" : "");
     const correctNoteName = NOTES[secondIdx].name;
     const correctNoteOct = NOTES[secondIdx].oct;
 
@@ -464,12 +464,12 @@ function nextQuestion() {
     const allPossible = [];
     for (let i = 1; i < NOTES.length; i++) {
       if (i !== secondIdx) {
-        const label = NOTES[i].name + (NOTES[i].oct === 5 ? " (hoog)" : "");
+        const label = NOTES[i].name + (NOTES[i].oct === 5 ? " (kruis)" : "");
         allPossible.push(label);
       }
     }
     const wrongs = shuffle(allPossible).slice(0, 3);
-    const correctLabel = correctNoteName + (correctNoteOct === 5 ? " (hoog)" : "");
+    const correctLabel = correctNoteName + (correctNoteOct === 5 ? " (kruis)" : "");
     const opts = shuffle([correctLabel, ...wrongs]);
 
     const grid = document.getElementById("options");
