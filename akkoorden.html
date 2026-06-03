@@ -89,7 +89,7 @@ svg.staff { overflow: visible; }
 
   <div class="level-tabs" id="niveau-tabs">
     <button class="level-btn active" onclick="setNiveau(1)">Niveau 1<br><small style="font-size:10px;opacity:0.7">Losse akkoorden</small></button>
-    <button class="level-btn"        onclick="setNiveau(2)">Niveau 2<br><small style="font-size:10px;opacity:0.7">7 trappen</small></button>
+    <button class="level-btn"        onclick="setNiveau(2)">Niveau 2<br><small style="font-size:10px;opacity:0.7">Septiem akkoorden</small></button>
   </div>
 
   <div class="level-tabs">
@@ -161,20 +161,47 @@ const CHORDS = [
   { name: "Sol verminderd",  notes: [{name:"Sol",  staffPos:4, accidental:null}, {name:"Sib", staffPos:6, accidental:"b"}, {name:"Reb",  staffPos:8,  accidental:"b"}]  },
 ];
 
-// De 7 toonaardeigen akkoorden (trappen I–VII) voor 9 veelgebruikte toonaarden
-const KEY_CHORDS = {
-  "Do majeur":  ["Do majeur",  "Re mineur",  "Mi mineur",   "Fa majeur",  "Sol majeur", "La mineur",   "Si verminderd"],
-  "Sol majeur": ["Sol majeur", "La mineur",  "Si mineur",   "Do majeur",  "Re majeur",  "Mi mineur",   "Fa# verminderd"],
-  "Re majeur":  ["Re majeur",  "Mi mineur",  "Fa# mineur",  "Sol majeur", "La majeur",  "Si mineur",   "Do# verminderd"],
-  "La majeur":  ["La majeur",  "Si mineur",  "Do# mineur",  "Re majeur",  "Mi majeur",  "Fa# mineur",  "Sol# verminderd"],
-  "Mi majeur":  ["Mi majeur",  "Fa# mineur", "Sol# mineur", "La majeur",  "Si majeur",  "Do# mineur",  "Re# verminderd"],
-  "Fa majeur":  ["Fa majeur",  "Sol mineur", "La mineur",   "Sib majeur", "Do majeur",  "Re mineur",   "Mi verminderd"],
-  "Sib majeur": ["Sib majeur", "Do mineur",  "Re mineur",   "Mib majeur", "Fa majeur",  "Sol mineur",  "La verminderd"],
-  "Mib majeur": ["Mib majeur", "Fa mineur",  "Sol mineur",  "Lab majeur", "Sib majeur", "Do mineur",   "Re verminderd"],
-  "Lab majeur": ["Lab majeur", "Sib mineur", "Do mineur",   "Reb majeur", "Mib majeur", "Fa mineur",   "Sol verminderd"],
-};
-const DEGREE_LABELS = ["I", "II", "III", "IV", "V", "VI", "VII"];
-const KEY_NAMES = Object.keys(KEY_CHORDS);
+// Septiem akkoorden (vierklanken): dominant, grote, kleine septiem – 12 roots elk
+const SEVENTH_CHORDS = [
+  // ── DOMINANT SEPTIEM (maj terts + kl. septiem) ──
+  { name: "Do dominant septiem",   notes: [{name:"Do",  staffPos:0, accidental:null},{name:"Mi",  staffPos:2,accidental:null},{name:"Sol", staffPos:4,accidental:null},{name:"Sib", staffPos:6,accidental:"b"}]  },
+  { name: "Reb dominant septiem",  notes: [{name:"Reb", staffPos:1,accidental:"b"},{name:"Fa",  staffPos:3,accidental:null},{name:"Lab", staffPos:5,accidental:"b"}, {name:"Dob", staffPos:7,accidental:"b"}]  },
+  { name: "Re dominant septiem",   notes: [{name:"Re",  staffPos:1,accidental:null},{name:"Fa#", staffPos:3,accidental:"#"},{name:"La",  staffPos:5,accidental:null},{name:"Do",  staffPos:7,accidental:null}]  },
+  { name: "Mib dominant septiem",  notes: [{name:"Mib", staffPos:2,accidental:"b"},{name:"Sol", staffPos:4,accidental:null},{name:"Sib", staffPos:6,accidental:"b"}, {name:"Reb", staffPos:8,accidental:"b"}]  },
+  { name: "Mi dominant septiem",   notes: [{name:"Mi",  staffPos:2,accidental:null},{name:"Sol#",staffPos:4,accidental:"#"},{name:"Si",  staffPos:6,accidental:null},{name:"Re",  staffPos:8,accidental:null}]  },
+  { name: "Fa dominant septiem",   notes: [{name:"Fa",  staffPos:3,accidental:null},{name:"La",  staffPos:5,accidental:null},{name:"Do",  staffPos:7,accidental:null},{name:"Mib", staffPos:9,accidental:"b"}]  },
+  { name: "Fa# dominant septiem",  notes: [{name:"Fa#", staffPos:3,accidental:"#"},{name:"La#", staffPos:5,accidental:"#"},{name:"Do#", staffPos:7,accidental:"#"}, {name:"Mi",  staffPos:9,accidental:null}]  },
+  { name: "Sol dominant septiem",  notes: [{name:"Sol", staffPos:4,accidental:null},{name:"Si",  staffPos:6,accidental:null},{name:"Re",  staffPos:8,accidental:null},{name:"Fa",  staffPos:10,accidental:null}] },
+  { name: "Lab dominant septiem",  notes: [{name:"Lab", staffPos:5,accidental:"b"},{name:"Do",  staffPos:7,accidental:null},{name:"Mib", staffPos:9,accidental:"b"}, {name:"Solb",staffPos:11,accidental:"b"}] },
+  { name: "La dominant septiem",   notes: [{name:"La",  staffPos:5,accidental:null},{name:"Do#", staffPos:7,accidental:"#"},{name:"Mi",  staffPos:9,accidental:null},{name:"Sol", staffPos:11,accidental:null}] },
+  { name: "Sib dominant septiem",  notes: [{name:"Sib", staffPos:6,accidental:"b"},{name:"Re",  staffPos:8,accidental:null},{name:"Fa",  staffPos:10,accidental:null},{name:"Lab",staffPos:12,accidental:"b"}]  },
+  { name: "Si dominant septiem",   notes: [{name:"Si",  staffPos:6,accidental:null},{name:"Re#", staffPos:8,accidental:"#"},{name:"Fa#", staffPos:10,accidental:"#"},{name:"La", staffPos:12,accidental:null}]  },
+  // ── GROTE SEPTIEM (maj terts + gr. septiem) ──
+  { name: "Do grote septiem",      notes: [{name:"Do",  staffPos:0, accidental:null},{name:"Mi",  staffPos:2,accidental:null},{name:"Sol", staffPos:4,accidental:null},{name:"Si",  staffPos:6,accidental:null}]  },
+  { name: "Reb grote septiem",     notes: [{name:"Reb", staffPos:1,accidental:"b"},{name:"Fa",  staffPos:3,accidental:null},{name:"Lab", staffPos:5,accidental:"b"}, {name:"Do",  staffPos:7,accidental:null}]  },
+  { name: "Re grote septiem",      notes: [{name:"Re",  staffPos:1,accidental:null},{name:"Fa#", staffPos:3,accidental:"#"},{name:"La",  staffPos:5,accidental:null},{name:"Do#", staffPos:7,accidental:"#"}]   },
+  { name: "Mib grote septiem",     notes: [{name:"Mib", staffPos:2,accidental:"b"},{name:"Sol", staffPos:4,accidental:null},{name:"Sib", staffPos:6,accidental:"b"}, {name:"Re",  staffPos:8,accidental:null}]  },
+  { name: "Mi grote septiem",      notes: [{name:"Mi",  staffPos:2,accidental:null},{name:"Sol#",staffPos:4,accidental:"#"},{name:"Si",  staffPos:6,accidental:null},{name:"Re#", staffPos:8,accidental:"#"}]   },
+  { name: "Fa grote septiem",      notes: [{name:"Fa",  staffPos:3,accidental:null},{name:"La",  staffPos:5,accidental:null},{name:"Do",  staffPos:7,accidental:null},{name:"Mi",  staffPos:9,accidental:null}]  },
+  { name: "Sol grote septiem",     notes: [{name:"Sol", staffPos:4,accidental:null},{name:"Si",  staffPos:6,accidental:null},{name:"Re",  staffPos:8,accidental:null},{name:"Fa#", staffPos:10,accidental:"#"}]  },
+  { name: "Lab grote septiem",     notes: [{name:"Lab", staffPos:5,accidental:"b"},{name:"Do",  staffPos:7,accidental:null},{name:"Mib", staffPos:9,accidental:"b"}, {name:"Sol", staffPos:11,accidental:null}] },
+  { name: "La grote septiem",      notes: [{name:"La",  staffPos:5,accidental:null},{name:"Do#", staffPos:7,accidental:"#"},{name:"Mi",  staffPos:9,accidental:null},{name:"Sol#",staffPos:11,accidental:"#"}]  },
+  { name: "Sib grote septiem",     notes: [{name:"Sib", staffPos:6,accidental:"b"},{name:"Re",  staffPos:8,accidental:null},{name:"Fa",  staffPos:10,accidental:null},{name:"La", staffPos:12,accidental:null}]  },
+  { name: "Si grote septiem",      notes: [{name:"Si",  staffPos:6,accidental:null},{name:"Re#", staffPos:8,accidental:"#"},{name:"Fa#", staffPos:10,accidental:"#"},{name:"La#",staffPos:12,accidental:"#"}]   },
+  // ── KLEINE SEPTIEM (kl. terts + kl. septiem) ──
+  { name: "Do kleine septiem",     notes: [{name:"Do",  staffPos:0, accidental:null},{name:"Mib", staffPos:2,accidental:"b"},{name:"Sol", staffPos:4,accidental:null},{name:"Sib", staffPos:6,accidental:"b"}]   },
+  { name: "Do# kleine septiem",    notes: [{name:"Do#", staffPos:0,accidental:"#"},{name:"Mi",  staffPos:2,accidental:null},{name:"Sol#",staffPos:4,accidental:"#"}, {name:"Si",  staffPos:6,accidental:null}]  },
+  { name: "Re kleine septiem",     notes: [{name:"Re",  staffPos:1,accidental:null},{name:"Fa",  staffPos:3,accidental:null},{name:"La",  staffPos:5,accidental:null},{name:"Do",  staffPos:7,accidental:null}]  },
+  { name: "Mib kleine septiem",    notes: [{name:"Mib", staffPos:2,accidental:"b"},{name:"Solb",staffPos:4,accidental:"b"},{name:"Sib", staffPos:6,accidental:"b"}, {name:"Reb", staffPos:8,accidental:"b"}]   },
+  { name: "Mi kleine septiem",     notes: [{name:"Mi",  staffPos:2,accidental:null},{name:"Sol", staffPos:4,accidental:null},{name:"Si",  staffPos:6,accidental:null},{name:"Re",  staffPos:8,accidental:null}]  },
+  { name: "Fa kleine septiem",     notes: [{name:"Fa",  staffPos:3,accidental:null},{name:"Lab", staffPos:5,accidental:"b"},{name:"Do",  staffPos:7,accidental:null},{name:"Mib", staffPos:9,accidental:"b"}]   },
+  { name: "Fa# kleine septiem",    notes: [{name:"Fa#", staffPos:3,accidental:"#"},{name:"La",  staffPos:5,accidental:null},{name:"Do#", staffPos:7,accidental:"#"}, {name:"Mi",  staffPos:9,accidental:null}]  },
+  { name: "Sol kleine septiem",    notes: [{name:"Sol", staffPos:4,accidental:null},{name:"Sib", staffPos:6,accidental:"b"},{name:"Re",  staffPos:8,accidental:null},{name:"Fa",  staffPos:10,accidental:null}]  },
+  { name: "Sol# kleine septiem",   notes: [{name:"Sol#",staffPos:4,accidental:"#"},{name:"Si",  staffPos:6,accidental:null},{name:"Re#", staffPos:8,accidental:"#"}, {name:"Fa#", staffPos:10,accidental:"#"}]  },
+  { name: "La kleine septiem",     notes: [{name:"La",  staffPos:5,accidental:null},{name:"Do",  staffPos:7,accidental:null},{name:"Mi",  staffPos:9,accidental:null},{name:"Sol", staffPos:11,accidental:null}] },
+  { name: "Sib kleine septiem",    notes: [{name:"Sib", staffPos:6,accidental:"b"},{name:"Reb", staffPos:8,accidental:"b"},{name:"Fa",  staffPos:10,accidental:null},{name:"Lab",staffPos:12,accidental:"b"}]   },
+  { name: "Si kleine septiem",     notes: [{name:"Si",  staffPos:6,accidental:null},{name:"Re",  staffPos:8,accidental:null},{name:"Fa#", staffPos:10,accidental:"#"},{name:"La", staffPos:12,accidental:null}]  },
+];
 
 const CHROMATIC_SORT = {
   "Do":0, "Do#":1, "Reb":1.1, "Re":2, "Mib":3, "Re#":3.1,
@@ -185,6 +212,12 @@ const CHROMATIC_SORT = {
 function chordSortKey(name) {
   const root = name.replace(/ (majeur|mineur|verminderd)$/, "");
   const type = name.includes("majeur") ? 0 : name.includes("mineur") ? 1 : 2;
+  return (CHROMATIC_SORT[root] ?? 99) * 10 + type;
+}
+
+function septChordSortKey(name) {
+  const root = name.replace(/ (dominant|grote|kleine) septiem$/, "");
+  const type = name.includes("dominant") ? 0 : name.includes("grote") ? 1 : 2;
   return (CHROMATIC_SORT[root] ?? 99) * 10 + type;
 }
 
@@ -325,32 +358,33 @@ function nextQuestion() {
 
   const mode = questionMode === "both" ? (Math.random() < 0.5 ? "herken" : "bouw") : questionMode;
 
-  // Niveau 2: 7 trappen van een toonaard
+  // Niveau 2: septiem akkoorden
   if (niveau === 2) {
-    const keyName = KEY_NAMES[Math.floor(Math.random() * KEY_NAMES.length)];
-    const keyChords = KEY_CHORDS[keyName];
-    const degreeIdx = Math.floor(Math.random() * 7);
-    const chordName = keyChords[degreeIdx];
-    const chord = CHORDS.find(c => c.name === chordName);
-    const degreeLabel = DEGREE_LABELS[degreeIdx];
+    const chord = SEVENTH_CHORDS[Math.floor(Math.random() * SEVENTH_CHORDS.length)];
+    const allNames = SEVENTH_CHORDS.map(c => c.name);
+    const allNoteStrings = SEVENTH_CHORDS.map(c => noteString(c));
 
     if (mode === "herken") {
-      document.getElementById("q-type-badge").textContent = "Welke trap?";
-      document.getElementById("q-label").textContent = `Dit akkoord staat in ${keyName}. Welke trap is het?`;
+      document.getElementById("q-type-badge").textContent = "Herken het septiem akkoord";
+      document.getElementById("q-label").textContent = "Welk septiem akkoord staat er op de balk?";
       document.getElementById("q-text").style.display = "none";
       document.getElementById("staff-wrap").style.display = "flex";
       drawChordOnStaff(chord);
-      currentAnswer = degreeLabel;
-      renderOptions([...DEGREE_LABELS]);
-    } else {
-      document.getElementById("q-type-badge").textContent = "Bouw de trap";
-      document.getElementById("q-label").textContent = `Welk akkoord is de ${degreeLabel} trap van ${keyName}?`;
-      document.getElementById("q-text").style.display = "none";
-      document.getElementById("staff-wrap").style.display = "none";
-      currentAnswer = chordName;
+      currentAnswer = chord.name;
       const opts = allOptions
-        ? [...keyChords]
-        : shuffle([chordName, ...shuffle(CHORDS.map(c => c.name).filter(n => n !== chordName)).slice(0, 3)]);
+        ? [...allNames].sort((a, b) => septChordSortKey(a) - septChordSortKey(b))
+        : shuffle([chord.name, ...shuffle(allNames.filter(n => n !== chord.name)).slice(0, 3)]);
+      renderOptions(opts);
+    } else {
+      document.getElementById("q-type-badge").textContent = "Bouw het septiem akkoord";
+      document.getElementById("q-label").textContent = "Welke noten vormen dit septiem akkoord?";
+      document.getElementById("q-text").style.display = "block";
+      document.getElementById("q-text").textContent = chord.name;
+      document.getElementById("staff-wrap").style.display = "none";
+      currentAnswer = noteString(chord);
+      const opts = allOptions
+        ? [...SEVENTH_CHORDS].sort((a, b) => septChordSortKey(a.name) - septChordSortKey(b.name)).map(c => noteString(c))
+        : shuffle([currentAnswer, ...shuffle(allNoteStrings.filter(s => s !== currentAnswer)).slice(0, 3)]);
       renderOptions(opts);
     }
 
