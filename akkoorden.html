@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Akkoorden Oefeningen</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f0e8; --surface: #fdfaf5; --surface2: #f0ebe0;
+  --border: rgba(80,60,30,0.15); --border-strong: rgba(80,60,30,0.3);
+  --text: #2a1f0e; --text-muted: #7a6a50; --text-faint: #b0a080;
+  --accent: #8b4513; --accent-light: #f5e6d3;
+  --green: #2d6a4f; --green-light: #d8f3dc;
+  --red: #9b1c1c; --red-light: #fde8e8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+  padding: 2rem 1rem 4rem;
+}
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: repeating-linear-gradient(to bottom, transparent 0px, transparent 28px, rgba(80,60,30,0.06) 28px, rgba(80,60,30,0.06) 29px);
+  pointer-events: none; z-index: 0;
+}
+.wrap { position: relative; z-index: 1; width: 100%; max-width: 620px; }
+header { text-align: center; margin-bottom: 2rem; }
+header .clef { font-size: 64px; line-height: 1; display: block; opacity: 0.7; margin-bottom: 0.2rem; }
+header h1 { font-family: 'Lora', serif; font-size: 24px; font-weight: 600; }
+header p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+.score-bar { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 1.25rem; }
+.score-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; }
+.score-num { font-family: 'Lora', serif; font-size: 26px; font-weight: 500; }
+.score-lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.level-tabs { display: flex; gap: 6px; margin-bottom: 1.25rem; background: var(--surface2); border-radius: 10px; padding: 4px; border: 0.5px solid var(--border); }
+.level-btn { flex: 1; padding: 8px 4px; border: none; border-radius: 7px; background: transparent; color: var(--text-muted); font-size: 13px; font-family: 'Source Sans 3', sans-serif; cursor: pointer; transition: background 0.15s, color 0.15s; }
+.level-btn.active { background: var(--surface); color: var(--accent); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+.toggle-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; font-size: 13px; color: var(--text-muted); }
+.toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--border-strong); border-radius: 20px; transition: background 0.2s; }
+.toggle-slider::before { content: ''; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
+.toggle-switch input:checked + .toggle-slider { background: var(--accent); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(16px); }
+
+.question-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 14px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(80,50,10,0.07); }
+.type-badge { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 20px; margin-bottom: 1rem; background: var(--accent-light); color: var(--accent); font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+.question-label { font-size: 13px; color: var(--text-muted); margin-bottom: 0.5rem; }
+.question-text { font-family: 'Lora', serif; font-size: 22px; font-weight: 500; color: var(--text); margin-bottom: 1.25rem; }
+
+.staff-wrap { display: flex; justify-content: center; margin-bottom: 1.5rem; }
+svg.staff { overflow: visible; }
+
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.opt-btn { padding: 10px 12px; border: 0.5px solid var(--border-strong); border-radius: 8px; background: transparent; color: var(--text); font-size: 14px; font-family: 'Source Sans 3', sans-serif; cursor: pointer; text-align: left; transition: background 0.12s; line-height: 1.3; }
+.opt-btn:hover:not(:disabled) { background: var(--surface2); }
+.opt-btn.correct { background: var(--green-light); border-color: var(--green); color: var(--green); font-weight: 600; }
+.opt-btn.wrong { background: var(--red-light); border-color: var(--red); color: var(--red); }
+.opt-btn:disabled { cursor: default; }
+
+.feedback { margin-top: 1rem; padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; display: none; }
+.feedback.correct { background: var(--green-light); color: var(--green); }
+.feedback.wrong { background: var(--red-light); color: var(--red); }
+
+.next-btn { margin-top: 1rem; width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--text); color: var(--bg); font-size: 15px; font-family: 'Source Sans 3', sans-serif; font-weight: 500; cursor: pointer; display: none; transition: opacity 0.15s; }
+.next-btn:hover { opacity: 0.85; }
+.progress { font-size: 12px; color: var(--text-faint); text-align: center; margin-top: 1rem; letter-spacing: 0.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="clef">𝄞</span>
+    <h1>Akkoorden Oefeningen</h1>
+    <p>Grote en kleine drieklanken · Belgische notatie</p>
+  </header>
+
+  <div class="score-bar">
+    <div class="score-card"><div class="score-num" id="correct-count">0</div><div class="score-lbl">Juist</div></div>
+    <div class="score-card"><div class="score-num" id="wrong-count">0</div><div class="score-lbl">Fout</div></div>
+    <div class="score-card"><div class="score-num" id="streak-count">0</div><div class="score-lbl">Reeks</div></div>
+  </div>
+
+  <div class="level-tabs">
+    <button class="level-btn active" id="mode-btn-both"   onclick="setMode('both')">Gemengd</button>
+    <button class="level-btn"        id="mode-btn-herken" onclick="setMode('herken')">Herken akkoord</button>
+    <button class="level-btn"        id="mode-btn-bouw"   onclick="setMode('bouw')">Bouw akkoord</button>
+  </div>
+
+  <div class="toggle-bar">
+    <label class="toggle-switch">
+      <input type="checkbox" id="all-options-toggle" onchange="setAllOptions(this.checked)">
+      <span class="toggle-slider"></span>
+    </label>
+    <span>Alle antwoorden tonen (geen gokken)</span>
+  </div>
+
+  <div class="question-card">
+    <div class="type-badge" id="q-type-badge"></div>
+    <div class="question-label" id="q-label"></div>
+    <div class="question-text" id="q-text" style="display:none"></div>
+    <div class="staff-wrap" id="staff-wrap">
+      <svg class="staff" id="staff-svg" width="300" height="120"></svg>
+    </div>
+    <div class="options-grid" id="options"></div>
+    <div id="feedback" class="feedback"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">Volgende vraag →</button>
+  </div>
+  <div class="progress" id="progress"></div>
+</div>
+
+<script>
+// Alle 24 akkoorden (12 majeur + 12 mineur), grondligging, staffPos = diatonische positie t.o.v. Do4
+const CHORDS = [
+  // ── MAJEUR ──
+  { name: "Do majeur",   notes: [{name:"Do",   staffPos:0,  accidental:null}, {name:"Mi",   staffPos:2,  accidental:null}, {name:"Sol",  staffPos:4,  accidental:null}] },
+  { name: "Reb majeur",  notes: [{name:"Reb",  staffPos:1,  accidental:"b"},  {name:"Fa",   staffPos:3,  accidental:null}, {name:"Lab",  staffPos:5,  accidental:"b"}]  },
+  { name: "Re majeur",   notes: [{name:"Re",   staffPos:1,  accidental:null}, {name:"Fa#",  staffPos:3,  accidental:"#"}, {name:"La",   staffPos:5,  accidental:null}] },
+  { name: "Mib majeur",  notes: [{name:"Mib",  staffPos:2,  accidental:"b"},  {name:"Sol",  staffPos:4,  accidental:null}, {name:"Sib",  staffPos:6,  accidental:"b"}]  },
+  { name: "Mi majeur",   notes: [{name:"Mi",   staffPos:2,  accidental:null}, {name:"Sol#", staffPos:4,  accidental:"#"}, {name:"Si",   staffPos:6,  accidental:null}] },
+  { name: "Fa majeur",   notes: [{name:"Fa",   staffPos:3,  accidental:null}, {name:"La",   staffPos:5,  accidental:null}, {name:"Do",   staffPos:7,  accidental:null}] },
+  { name: "Fa# majeur",  notes: [{name:"Fa#",  staffPos:3,  accidental:"#"},  {name:"La#",  staffPos:5,  accidental:"#"}, {name:"Do#",  staffPos:7,  accidental:"#"}]  },
+  { name: "Sol majeur",  notes: [{name:"Sol",  staffPos:4,  accidental:null}, {name:"Si",   staffPos:6,  accidental:null}, {name:"Re",   staffPos:8,  accidental:null}] },
+  { name: "Lab majeur",  notes: [{name:"Lab",  staffPos:5,  accidental:"b"},  {name:"Do",   staffPos:7,  accidental:null}, {name:"Mib",  staffPos:9,  accidental:"b"}]  },
+  { name: "La majeur",   notes: [{name:"La",   staffPos:5,  accidental:null}, {name:"Do#",  staffPos:7,  accidental:"#"}, {name:"Mi",   staffPos:9,  accidental:null}] },
+  { name: "Sib majeur",  notes: [{name:"Sib",  staffPos:6,  accidental:"b"},  {name:"Re",   staffPos:8,  accidental:null}, {name:"Fa",   staffPos:10, accidental:null}] },
+  { name: "Si majeur",   notes: [{name:"Si",   staffPos:6,  accidental:null}, {name:"Re#",  staffPos:8,  accidental:"#"}, {name:"Fa#",  staffPos:10, accidental:"#"}]  },
+  // ── MINEUR ──
+  { name: "Do mineur",   notes: [{name:"Do",   staffPos:0,  accidental:null}, {name:"Mib",  staffPos:2,  accidental:"b"}, {name:"Sol",  staffPos:4,  accidental:null}] },
+  { name: "Do# mineur",  notes: [{name:"Do#",  staffPos:0,  accidental:"#"},  {name:"Mi",   staffPos:2,  accidental:null}, {name:"Sol#", staffPos:4,  accidental:"#"}]  },
+  { name: "Re mineur",   notes: [{name:"Re",   staffPos:1,  accidental:null}, {name:"Fa",   staffPos:3,  accidental:null}, {name:"La",   staffPos:5,  accidental:null}] },
+  { name: "Mib mineur",  notes: [{name:"Mib",  staffPos:2,  accidental:"b"},  {name:"Solb", staffPos:4,  accidental:"b"}, {name:"Sib",  staffPos:6,  accidental:"b"}]  },
+  { name: "Mi mineur",   notes: [{name:"Mi",   staffPos:2,  accidental:null}, {name:"Sol",  staffPos:4,  accidental:null}, {name:"Si",   staffPos:6,  accidental:null}] },
+  { name: "Fa mineur",   notes: [{name:"Fa",   staffPos:3,  accidental:null}, {name:"Lab",  staffPos:5,  accidental:"b"}, {name:"Do",   staffPos:7,  accidental:null}] },
+  { name: "Fa# mineur",  notes: [{name:"Fa#",  staffPos:3,  accidental:"#"},  {name:"La",   staffPos:5,  accidental:null}, {name:"Do#",  staffPos:7,  accidental:"#"}]  },
+  { name: "Sol mineur",  notes: [{name:"Sol",  staffPos:4,  accidental:null}, {name:"Sib",  staffPos:6,  accidental:"b"}, {name:"Re",   staffPos:8,  accidental:null}] },
+  { name: "Sol# mineur", notes: [{name:"Sol#", staffPos:4,  accidental:"#"},  {name:"Si",   staffPos:6,  accidental:null}, {name:"Re#",  staffPos:8,  accidental:"#"}]  },
+  { name: "La mineur",   notes: [{name:"La",   staffPos:5,  accidental:null}, {name:"Do",   staffPos:7,  accidental:null}, {name:"Mi",   staffPos:9,  accidental:null}] },
+  { name: "Sib mineur",  notes: [{name:"Sib",  staffPos:6,  accidental:"b"},  {name:"Reb",  staffPos:8,  accidental:"b"}, {name:"Fa",   staffPos:10, accidental:null}] },
+  { name: "Si mineur",   notes: [{name:"Si",   staffPos:6,  accidental:null}, {name:"Re",   staffPos:8,  accidental:null}, {name:"Fa#",  staffPos:10, accidental:"#"}]  },
+];
+
+const CHROMATIC_SORT = {
+  "Do":0, "Do#":1, "Reb":1.1, "Re":2, "Mib":3, "Re#":3.1,
+  "Mi":4, "Fa":5, "Fa#":6, "Solb":6.1, "Sol":7, "Sol#":8, "Lab":8.1,
+  "La":9, "La#":10, "Sib":10.1, "Si":11
+};
+
+function chordSortKey(name) {
+  const root = name.replace(/ (majeur|mineur)$/, "");
+  return (CHROMATIC_SORT[root] ?? 99) * 10 + (name.includes("majeur") ? 0 : 1);
+}
+
+function noteString(chord) {
+  return chord.notes.map(n => n.name).join(" – ");
+}
+
+// Staff constants
+const SVG_H = 120, STAFF_LEFT = 40, STAFF_RIGHT = 270;
+const LINE_SPACING = 10, BOTTOM_LINE_Y = 88;
+
+function staffY(pos) {
+  return BOTTOM_LINE_Y - (pos - 2) * (LINE_SPACING / 2);
+}
+
+function drawChordOnStaff(chord) {
+  const svg = document.getElementById("staff-svg");
+  svg.innerHTML = "";
+  const ns = "http://www.w3.org/2000/svg";
+
+  function el(tag, attrs) {
+    const e = document.createElementNS(ns, tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    return e;
+  }
+
+  // Staff lines
+  for (const lp of [2, 4, 6, 8, 10]) {
+    svg.appendChild(el("line", { x1: STAFF_LEFT, y1: staffY(lp), x2: STAFF_RIGHT, y2: staffY(lp), stroke: "#5a3e20", "stroke-width": "1" }));
+  }
+
+  // Treble clef
+  const clef = document.createElementNS(ns, "text");
+  clef.setAttribute("x", "8"); clef.setAttribute("y", String(staffY(6) + 6));
+  clef.setAttribute("font-size", "52"); clef.setAttribute("fill", "#5a3e20"); clef.setAttribute("font-family", "serif");
+  clef.textContent = "𝄞";
+  svg.appendChild(clef);
+
+  const xNote = 170;
+  const notes = [...chord.notes].sort((a, b) => a.staffPos - b.staffPos);
+
+  // Stagger accidentals to avoid overlap: iterate from highest note down
+  const accNotes = notes.filter(n => n.accidental);
+  const accX = {};
+  let prevPos = 99, prevX = xNote - 16;
+  for (let i = accNotes.length - 1; i >= 0; i--) {
+    const n = accNotes[i];
+    if (prevPos - n.staffPos <= 2) {
+      prevX -= 14;
+    } else {
+      prevX = xNote - 16;
+    }
+    accX[n.staffPos] = prevX;
+    prevPos = n.staffPos;
+  }
+
+  // Draw notes
+  notes.forEach(note => {
+    const pos = note.staffPos;
+    const y = staffY(pos);
+
+    // Ledger lines
+    if (pos <= 0) svg.appendChild(el("line", { x1: xNote-12, y1: staffY(0),  x2: xNote+12, y2: staffY(0),  stroke: "#5a3e20", "stroke-width": "1" }));
+    if (pos >= 12) svg.appendChild(el("line", { x1: xNote-12, y1: staffY(12), x2: xNote+12, y2: staffY(12), stroke: "#5a3e20", "stroke-width": "1" }));
+
+    // Accidental
+    if (note.accidental) {
+      const acc = document.createElementNS(ns, "text");
+      acc.setAttribute("x", String(accX[pos]));
+      acc.setAttribute("y", String(y + 4));
+      acc.setAttribute("text-anchor", "middle");
+      acc.setAttribute("font-size", "13");
+      acc.setAttribute("fill", "#5a3e20");
+      acc.textContent = note.accidental === "#" ? "♯" : "♭";
+      svg.appendChild(acc);
+    }
+
+    // Note head
+    svg.appendChild(el("ellipse", { cx: xNote, cy: y, rx: "8", ry: "6", fill: "#5a3e20", transform: `rotate(-15, ${xNote}, ${y})` }));
+  });
+
+  // Stem: up if chord center < middle line (pos 6), else down
+  const botPos = notes[0].staffPos;
+  const topPos = notes[notes.length - 1].staffPos;
+  const midPos = (botPos + topPos) / 2;
+  if (midPos <= 6) {
+    const stemX = xNote + 7;
+    const stemTop = staffY(topPos) - 35;
+    svg.appendChild(el("line", { x1: stemX, y1: staffY(topPos), x2: stemX, y2: stemTop, stroke: "#5a3e20", "stroke-width": "1.5" }));
+  } else {
+    const stemX = xNote - 7;
+    const stemBot = staffY(botPos) + 35;
+    svg.appendChild(el("line", { x1: stemX, y1: staffY(botPos), x2: stemX, y2: stemBot, stroke: "#5a3e20", "stroke-width": "1.5" }));
+  }
+}
+
+// State
+let questionMode = "both";
+let correct = 0, wrong = 0, streak = 0, qCount = 0;
+let answered = false;
+let currentAnswer = "";
+let allOptions = false;
+
+function setMode(m) {
+  questionMode = m;
+  ["both", "herken", "bouw"].forEach(id =>
+    document.getElementById("mode-btn-" + id).classList.toggle("active", m === id)
+  );
+  nextQuestion();
+}
+
+function setAllOptions(val) {
+  allOptions = val;
+  nextQuestion();
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function nextQuestion() {
+  answered = false;
+  qCount++;
+  document.getElementById("feedback").style.display = "none";
+  document.getElementById("next-btn").style.display = "none";
+
+  const chord = CHORDS[Math.floor(Math.random() * CHORDS.length)];
+  const mode = questionMode === "both" ? (Math.random() < 0.5 ? "herken" : "bouw") : questionMode;
+
+  if (mode === "herken") {
+    document.getElementById("q-type-badge").textContent = "Herken het akkoord";
+    document.getElementById("q-label").textContent = "Welk akkoord staat er op de balk?";
+    document.getElementById("q-text").style.display = "none";
+    document.getElementById("staff-wrap").style.display = "flex";
+
+    drawChordOnStaff(chord);
+    currentAnswer = chord.name;
+
+    const allNames = CHORDS.map(c => c.name);
+    const opts = allOptions
+      ? [...allNames].sort((a, b) => chordSortKey(a) - chordSortKey(b))
+      : shuffle([chord.name, ...shuffle(allNames.filter(n => n !== chord.name)).slice(0, 3)]);
+
+    renderOptions(opts);
+
+  } else {
+    document.getElementById("q-type-badge").textContent = "Bouw het akkoord";
+    document.getElementById("q-label").textContent = "Welke noten vormen dit akkoord?";
+    document.getElementById("q-text").style.display = "block";
+    document.getElementById("q-text").textContent = chord.name;
+    document.getElementById("staff-wrap").style.display = "none";
+
+    currentAnswer = noteString(chord);
+
+    const allNoteStrings = CHORDS.map(c => noteString(c));
+    const opts = allOptions
+      ? [...CHORDS].sort((a, b) => chordSortKey(a.name) - chordSortKey(b.name)).map(c => noteString(c))
+      : shuffle([currentAnswer, ...shuffle(allNoteStrings.filter(s => s !== currentAnswer)).slice(0, 3)]);
+
+    renderOptions(opts);
+  }
+
+  document.getElementById("progress").textContent = `Vraag ${qCount}`;
+}
+
+function renderOptions(opts) {
+  const grid = document.getElementById("options");
+  grid.innerHTML = "";
+  opts.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "opt-btn";
+    btn.textContent = opt;
+    btn.onclick = () => checkAnswer(opt, btn);
+    grid.appendChild(btn);
+  });
+}
+
+function checkAnswer(chosen, btn) {
+  if (answered) return;
+  answered = true;
+
+  const fb = document.getElementById("feedback");
+  const isCorrect = chosen === currentAnswer;
+
+  document.querySelectorAll(".opt-btn").forEach(b => {
+    b.disabled = true;
+    if (b.textContent === currentAnswer) b.classList.add("correct");
+  });
+
+  if (isCorrect) {
+    correct++; streak++;
+    fb.className = "feedback correct";
+    fb.textContent = "✓ Juist!";
+  } else {
+    wrong++; streak = 0;
+    btn.classList.add("wrong");
+    fb.className = "feedback wrong";
+    fb.textContent = `✗ Fout. Het juiste antwoord is: ${currentAnswer}`;
+  }
+
+  fb.style.display = "block";
+  document.getElementById("next-btn").style.display = "block";
+  document.getElementById("correct-count").textContent = correct;
+  document.getElementById("wrong-count").textContent = wrong;
+  document.getElementById("streak-count").textContent = streak;
+}
+
+nextQuestion();
+</script>
+<footer style="text-align:center; padding: 16px; font-size: 0.85em; color: #888;">
+  <a href="index.html" style="color: inherit; text-decoration: none; margin-right: 1rem;">← Terug</a>
+  &trade; Jens Mertens
+</footer>
+</body>
+</html>
