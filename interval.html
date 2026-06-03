@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intervallen Oefeningen</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f0e8;
+  --surface: #fdfaf5;
+  --surface2: #f0ebe0;
+  --border: rgba(80,60,30,0.15);
+  --border-strong: rgba(80,60,30,0.3);
+  --text: #2a1f0e;
+  --text-muted: #7a6a50;
+  --text-faint: #b0a080;
+  --accent: #8b4513;
+  --accent-light: #f5e6d3;
+  --green: #2d6a4f;
+  --green-light: #d8f3dc;
+  --red: #9b1c1c;
+  --red-light: #fde8e8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 2rem 1rem 4rem;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: repeating-linear-gradient(to bottom, transparent 0px, transparent 28px, rgba(80,60,30,0.06) 28px, rgba(80,60,30,0.06) 29px);
+  pointer-events: none; z-index: 0;
+}
+.wrap { position: relative; z-index: 1; width: 100%; max-width: 620px; }
+
+header { text-align: center; margin-bottom: 2rem; }
+header .clef { font-size: 64px; line-height: 1; display: block; opacity: 0.7; margin-bottom: 0.2rem; }
+header h1 { font-family: 'Lora', serif; font-size: 24px; font-weight: 600; }
+header p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+.score-bar { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 1.25rem; }
+.score-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; }
+.score-num { font-family: 'Lora', serif; font-size: 26px; font-weight: 500; }
+.score-lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Level selector */
+.level-tabs { display: flex; gap: 6px; margin-bottom: 1.25rem; background: var(--surface2); border-radius: 10px; padding: 4px; border: 0.5px solid var(--border); }
+.level-btn { flex: 1; padding: 8px 4px; border: none; border-radius: 7px; background: transparent; color: var(--text-muted); font-size: 13px; font-family: 'Source Sans 3', sans-serif; cursor: pointer; transition: background 0.15s, color 0.15s; }
+.level-btn.active { background: var(--surface); color: var(--accent); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+.question-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 14px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(80,50,10,0.07); }
+.type-badge { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 20px; margin-bottom: 1rem; background: var(--accent-light); color: var(--accent); font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+.question-label { font-size: 13px; color: var(--text-muted); margin-bottom: 0.5rem; }
+.question-text { font-family: 'Lora', serif; font-size: 20px; font-weight: 500; color: var(--text); margin-bottom: 1.25rem; }
+
+/* Staff */
+.staff-wrap { display: flex; justify-content: center; margin-bottom: 1.5rem; }
+svg.staff { overflow: visible; }
+
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.opt-btn { padding: 10px 12px; border: 0.5px solid var(--border-strong); border-radius: 8px; background: transparent; color: var(--text); font-size: 14px; font-family: 'Source Sans 3', sans-serif; cursor: pointer; text-align: left; transition: background 0.12s; line-height: 1.3; }
+.opt-btn:hover:not(:disabled) { background: var(--surface2); }
+.opt-btn.correct { background: var(--green-light); border-color: var(--green); color: var(--green); font-weight: 600; }
+.opt-btn.wrong { background: var(--red-light); border-color: var(--red); color: var(--red); }
+.opt-btn:disabled { cursor: default; }
+
+.feedback { margin-top: 1rem; padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; display: none; }
+.feedback.correct { background: var(--green-light); color: var(--green); }
+.feedback.wrong { background: var(--red-light); color: var(--red); }
+
+.next-btn { margin-top: 1rem; width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--text); color: var(--bg); font-size: 15px; font-family: 'Source Sans 3', sans-serif; font-weight: 500; cursor: pointer; display: none; transition: opacity 0.15s; }
+.next-btn:hover { opacity: 0.85; }
+
+.progress { font-size: 12px; color: var(--text-faint); text-align: center; margin-top: 1rem; letter-spacing: 0.5px; }
+
+/* Ref table */
+.ref-toggle { margin-top: 1.5rem; text-align: center; }
+.ref-toggle button { font-size: 13px; color: var(--text-muted); background: none; border: none; cursor: pointer; font-family: 'Source Sans 3', sans-serif; text-decoration: underline; text-underline-offset: 3px; }
+.ref-table-wrap { margin-top: 1rem; background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; display: none; }
+.ref-table-wrap.open { display: block; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: var(--surface2); color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; padding: 10px 14px; text-align: left; border-bottom: 0.5px solid var(--border); }
+td { padding: 8px 14px; border-bottom: 0.5px solid var(--border); color: var(--text); }
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: var(--bg); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="clef">𝄞</span>
+    <h1>Intervallen Oefeningen</h1>
+    <p>Belgische notatie · Do Re Mi Fa Sol La Si</p>
+  </header>
+
+  <div class="score-bar">
+    <div class="score-card"><div class="score-num" id="correct-count">0</div><div class="score-lbl">Juist</div></div>
+    <div class="score-card"><div class="score-num" id="wrong-count">0</div><div class="score-lbl">Fout</div></div>
+    <div class="score-card"><div class="score-num" id="streak-count">0</div><div class="score-lbl">Reeks</div></div>
+  </div>
+
+  <div class="level-tabs">
+    <button class="level-btn active" onclick="setLevel(1)">Niveau 1<br><small style="font-size:10px;opacity:0.7">Priem–Kwart</small></button>
+    <button class="level-btn" onclick="setLevel(2)">Niveau 2<br><small style="font-size:10px;opacity:0.7">t.e.m. Sext</small></button>
+    <button class="level-btn" onclick="setLevel(3)">Niveau 3<br><small style="font-size:10px;opacity:0.7">Alle intervallen</small></button>
+  </div>
+
+  <div class="level-tabs" style="margin-bottom:1.25rem">
+    <button class="level-btn active" id="mode-btn-both" onclick="setMode('both')">Gemengd</button>
+    <button class="level-btn" id="mode-btn-name" onclick="setMode('name')">Benoem interval</button>
+    <button class="level-btn" id="mode-btn-find" onclick="setMode('find')">Vind de noot</button>
+  </div>
+
+  <div class="question-card">
+    <div class="type-badge" id="q-type-badge"></div>
+    <div class="question-label" id="q-label"></div>
+    <div class="question-text" id="q-text" style="display:none"></div>
+    <div class="staff-wrap"><svg class="staff" id="staff-svg" width="320" height="120"></svg></div>
+    <div class="options-grid" id="options"></div>
+    <div id="feedback" class="feedback"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">Volgende vraag →</button>
+  </div>
+  <div class="progress" id="progress"></div>
+
+  <div class="ref-toggle"><button onclick="toggleRef()">📋 Toon intervallenlijst</button></div>
+  <div class="ref-table-wrap" id="ref-table">
+    <table>
+      <thead><tr><th>Interval</th><th>Halve tonen</th></tr></thead>
+      <tbody>
+        <tr><td>Reine priem (P1)</td><td>0</td></tr>
+        <tr><td>Kleine seconde (m2)</td><td>1</td></tr>
+        <tr><td>Grote seconde (M2)</td><td>2</td></tr>
+        <tr><td>Kleine terts (m3)</td><td>3</td></tr>
+        <tr><td>Grote terts (M3)</td><td>4</td></tr>
+        <tr><td>Reine kwart (P4)</td><td>5</td></tr>
+        <tr><td>Tritonus (overmatige kwart)</td><td>6</td></tr>
+        <tr><td>Reine kwint (P5)</td><td>7</td></tr>
+        <tr><td>Kleine sext (m6)</td><td>8</td></tr>
+        <tr><td>Grote sext (M6)</td><td>9</td></tr>
+        <tr><td>Kleine septiem (m7)</td><td>10</td></tr>
+        <tr><td>Grote septiem (M7)</td><td>11</td></tr>
+        <tr><td>Reine octaaf (P8)</td><td>12</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// Notes on the staff: each index = one diatonic step from C4
+// staffPos: 0=C4(Do), 1=D4, 2=E4, 3=F4, 4=G4, 5=A4, 6=B4, 7=C5, 8=D5, 9=E5, 10=F5
+// We draw treble clef staff, lines at positions for E4,G4,B4,D5,F5
+// Visual y: C4 sits just below bottom line (ledger line), E4 on line1, G4 on line2 etc.
+
+const NOTES = [
+  { name: "Do",  oct: 4, semitone: 0,  staffPos: 0  }, // C4
+  { name: "Re",  oct: 4, semitone: 2,  staffPos: 1  }, // D4
+  { name: "Mi",  oct: 4, semitone: 4,  staffPos: 2  }, // E4
+  { name: "Fa",  oct: 4, semitone: 5,  staffPos: 3  }, // F4
+  { name: "Sol", oct: 4, semitone: 7,  staffPos: 4  }, // G4
+  { name: "La",  oct: 4, semitone: 9,  staffPos: 5  }, // A4
+  { name: "Si",  oct: 4, semitone: 11, staffPos: 6  }, // B4
+  { name: "Do",  oct: 5, semitone: 12, staffPos: 7  }, // C5
+  { name: "Re",  oct: 5, semitone: 14, staffPos: 8  }, // D5
+  { name: "Mi",  oct: 5, semitone: 16, staffPos: 9  }, // E5
+  { name: "Fa",  oct: 5, semitone: 17, staffPos: 10 }, // F5
+];
+
+// Intervals per level
+const INTERVALS_BY_LEVEL = {
+  1: [
+    { name: "Reine priem",    short: "P1",  steps: 0, semitones: 0 },
+    { name: "Grote seconde",  short: "M2",  steps: 1, semitones: 2 },
+    { name: "Kleine terts",   short: "m3",  steps: 2, semitones: 3 },
+    { name: "Grote terts",    short: "M3",  steps: 2, semitones: 4 },
+    { name: "Reine kwart",    short: "P4",  steps: 3, semitones: 5 },
+  ],
+  2: [
+    { name: "Reine priem",    short: "P1",  steps: 0, semitones: 0 },
+    { name: "Kleine seconde", short: "m2",  steps: 1, semitones: 1 },
+    { name: "Grote seconde",  short: "M2",  steps: 1, semitones: 2 },
+    { name: "Kleine terts",   short: "m3",  steps: 2, semitones: 3 },
+    { name: "Grote terts",    short: "M3",  steps: 2, semitones: 4 },
+    { name: "Reine kwart",    short: "P4",  steps: 3, semitones: 5 },
+    { name: "Reine kwint",    short: "P5",  steps: 4, semitones: 7 },
+    { name: "Kleine sext",    short: "m6",  steps: 5, semitones: 8 },
+    { name: "Grote sext",     short: "M6",  steps: 5, semitones: 9 },
+  ],
+  3: [
+    { name: "Reine priem",    short: "P1",  steps: 0, semitones: 0 },
+    { name: "Kleine seconde", short: "m2",  steps: 1, semitones: 1 },
+    { name: "Grote seconde",  short: "M2",  steps: 1, semitones: 2 },
+    { name: "Kleine terts",   short: "m3",  steps: 2, semitones: 3 },
+    { name: "Grote terts",    short: "M3",  steps: 2, semitones: 4 },
+    { name: "Reine kwart",    short: "P4",  steps: 3, semitones: 5 },
+    { name: "Tritonus",       short: "TT",  steps: 3, semitones: 6 },
+    { name: "Reine kwint",    short: "P5",  steps: 4, semitones: 7 },
+    { name: "Kleine sext",    short: "m6",  steps: 5, semitones: 8 },
+    { name: "Grote sext",     short: "M6",  steps: 5, semitones: 9 },
+    { name: "Kleine septiem", short: "m7",  steps: 6, semitones: 10 },
+    { name: "Grote septiem",  short: "M7",  steps: 6, semitones: 11 },
+    { name: "Reine octaaf",   short: "P8",  steps: 7, semitones: 12 },
+  ]
+};
+
+// Staff drawing constants
+const SVG_W = 320, SVG_H = 120;
+const STAFF_LEFT = 50, STAFF_RIGHT = 280;
+const LINE_SPACING = 10; // pixels between staff lines
+// Bottom staff line (E4) y position
+const BOTTOM_LINE_Y = 88;
+// staffPos to y: staffPos 2 = E4 = bottom line
+// each step = LINE_SPACING/2 upward
+function staffY(pos) {
+  return BOTTOM_LINE_Y - (pos - 2) * (LINE_SPACING / 2);
+}
+
+function drawStaff(note1idx, note2idx, showNote2) {
+  const svg = document.getElementById("staff-svg");
+  svg.innerHTML = "";
+
+  const ns = "http://www.w3.org/2000/svg";
+
+  function el(tag, attrs) {
+    const e = document.createElementNS(ns, tag);
+    for (const [k,v] of Object.entries(attrs)) e.setAttribute(k, v);
+    return e;
+  }
+
+  // Staff lines (E4=pos2, G4=pos4, B4=pos6, D5=pos8, F5=pos10)
+  const linePositions = [2, 4, 6, 8, 10];
+  for (const lp of linePositions) {
+    const y = staffY(lp);
+    svg.appendChild(el("line", { x1: STAFF_LEFT, y1: y, x2: STAFF_RIGHT, y2: y, stroke: "#5a3e20", "stroke-width": "1" }));
+  }
+
+  // Treble clef (simplified text symbol)
+  const clefText = document.createElementNS(ns, "text");
+  clefText.setAttribute("x", "14");
+  clefText.setAttribute("y", String(staffY(6) + 6));
+  clefText.setAttribute("font-size", "52");
+  clefText.setAttribute("fill", "#5a3e20");
+  clefText.setAttribute("font-family", "serif");
+  clefText.textContent = "𝄞";
+  svg.appendChild(clefText);
+
+  // Draw a note at staffPos
+  function drawNote(pos, xCenter, color, showLabel) {
+    const y = staffY(pos);
+
+    // Ledger lines if needed
+    // Below staff: pos < 2 (C4=0, D4=1 need ledger)
+    // Above staff: pos > 10
+    if (pos <= 0) {
+      // C4 needs ledger line at pos 0
+      svg.appendChild(el("line", { x1: xCenter-12, y1: staffY(0), x2: xCenter+12, y2: staffY(0), stroke: "#5a3e20", "stroke-width": "1" }));
+    }
+    if (pos <= -2) {
+      svg.appendChild(el("line", { x1: xCenter-12, y1: staffY(-2), x2: xCenter+12, y2: staffY(-2), stroke: "#5a3e20", "stroke-width": "1" }));
+    }
+    if (pos >= 12) {
+      svg.appendChild(el("line", { x1: xCenter-12, y1: staffY(12), x2: xCenter+12, y2: staffY(12), stroke: "#5a3e20", "stroke-width": "1" }));
+    }
+
+    // Note head (ellipse)
+    const noteHead = el("ellipse", {
+      cx: xCenter, cy: y,
+      rx: "8", ry: "6",
+      fill: color,
+      transform: `rotate(-15, ${xCenter}, ${y})`
+    });
+    svg.appendChild(noteHead);
+
+    // Stem
+    const stemDir = pos < 6 ? -1 : 1; // up if below middle, down if above
+    const stemX = stemDir === -1 ? xCenter + 7 : xCenter - 7;
+    const stemY1 = y;
+    const stemY2 = y + stemDir * 32;
+    svg.appendChild(el("line", { x1: stemX, y1: stemY1, x2: stemX, y2: stemY2, stroke: color, "stroke-width": "1.5" }));
+
+    // Note name label below
+    if (showLabel) {
+      const label = document.createElementNS(ns, "text");
+      label.setAttribute("x", String(xCenter));
+      label.setAttribute("y", String(SVG_H - 4));
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("font-size", "12");
+      label.setAttribute("font-family", "Source Sans 3, sans-serif");
+      label.setAttribute("fill", color);
+      label.setAttribute("font-weight", "500");
+      label.textContent = NOTES[pos] ? NOTES[pos].name : "";
+      svg.appendChild(label);
+    }
+  }
+
+  // Note 1 (always shown)
+  drawNote(note1idx, 110, "#5a3e20", true);
+
+  // Note 2
+  if (showNote2) {
+    drawNote(note2idx, 210, "#8b4513", true);
+  } else {
+    // Show question mark note
+    const y = staffY(note2idx);
+    if (note2idx <= 0) {
+      const ns2 = "http://www.w3.org/2000/svg";
+      const ll = document.createElementNS(ns2, "line");
+      ll.setAttribute("x1", "198"); ll.setAttribute("y1", String(staffY(0)));
+      ll.setAttribute("x2", "222"); ll.setAttribute("y2", String(staffY(0)));
+      ll.setAttribute("stroke", "#5a3e20"); ll.setAttribute("stroke-width", "1");
+      svg.appendChild(ll);
+    }
+    const qHead = el("ellipse", {
+      cx: "210", cy: String(y),
+      rx: "8", ry: "6",
+      fill: "none",
+      stroke: "#b0a080",
+      "stroke-width": "1.5",
+      "stroke-dasharray": "3 2",
+      transform: `rotate(-15, 210, ${y})`
+    });
+    svg.appendChild(qHead);
+    const qMark = document.createElementNS(ns, "text");
+    qMark.setAttribute("x", "210");
+    qMark.setAttribute("y", String(SVG_H - 4));
+    qMark.setAttribute("text-anchor", "middle");
+    qMark.setAttribute("font-size", "12");
+    qMark.setAttribute("font-family", "Source Sans 3, sans-serif");
+    qMark.setAttribute("fill", "#b0a080");
+    qMark.textContent = "?";
+    svg.appendChild(qMark);
+  }
+
+  // Bracket / line between notes
+  if (showNote2) {
+    const y1 = staffY(note1idx) - 22;
+    const y2 = staffY(note2idx) - 22;
+    const yTop = Math.min(y1, y2) - 6;
+    svg.appendChild(el("line", { x1: "110", y1: String(yTop), x2: "210", y2: String(yTop), stroke: "#c0a070", "stroke-width": "1", "stroke-dasharray": "4 2" }));
+    svg.appendChild(el("line", { x1: "110", y1: String(yTop), x2: "110", y2: String(yTop + 6), stroke: "#c0a070", "stroke-width": "1" }));
+    svg.appendChild(el("line", { x1: "210", y1: String(yTop), x2: "210", y2: String(yTop + 6), stroke: "#c0a070", "stroke-width": "1" }));
+  }
+}
+
+// State
+let level = 1;
+let questionMode = "both";
+let correct = 0, wrong = 0, streak = 0, qCount = 0;
+let answered = false;
+let currentAnswer = "";
+
+function setLevel(l) {
+  level = l;
+  document.querySelectorAll(".level-btn").forEach((b, i) => b.classList.toggle("active", i+1 === l));
+  nextQuestion();
+}
+
+function setMode(m) {
+  questionMode = m;
+  document.getElementById("mode-btn-both").classList.toggle("active", m === "both");
+  document.getElementById("mode-btn-name").classList.toggle("active", m === "name");
+  document.getElementById("mode-btn-find").classList.toggle("active", m === "find");
+  nextQuestion();
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function nextQuestion() {
+  answered = false;
+  qCount++;
+  document.getElementById("feedback").style.display = "none";
+  document.getElementById("next-btn").style.display = "none";
+  document.getElementById("q-text").style.display = "none";
+
+  const intervals = INTERVALS_BY_LEVEL[level];
+  // Decide mode: name-the-interval or find-the-note
+  const mode = questionMode === "both" ? (Math.random() < 0.5 ? "name" : "find") : questionMode;
+
+  if (mode === "name") {
+    // Pick random root note (not too high so second note fits)
+    // Filter valid intervals from this root
+    let rootIdx, interval, secondIdx;
+    let attempts = 0;
+    do {
+      rootIdx = Math.floor(Math.random() * (NOTES.length - 1));
+      interval = intervals[Math.floor(Math.random() * intervals.length)];
+      secondIdx = rootIdx + interval.steps;
+      attempts++;
+    } while (secondIdx >= NOTES.length && attempts < 50);
+
+    if (secondIdx >= NOTES.length) { nextQuestion(); return; }
+
+    // Verify semitone match (diatonic only)
+    const actualSemitones = NOTES[secondIdx].semitone - NOTES[rootIdx].semitone;
+    // For now we just use step-based matching; tritonus is special
+    // Only allow intervals that cleanly map with our diatonic notes
+    // Skip if semitone mismatch (e.g. tritonus needs augmented step)
+    if (interval.short !== "TT" && actualSemitones !== interval.semitones) {
+      nextQuestion(); return;
+    }
+
+    currentAnswer = interval.name;
+    document.getElementById("q-type-badge").textContent = "Benoem het interval";
+    document.getElementById("q-label").textContent =
+      `Welk interval hoor je tussen ${NOTES[rootIdx].name} en ${NOTES[secondIdx].name}?`;
+
+    drawStaff(rootIdx, secondIdx, true);
+
+    // Options: correct + 3 wrong
+    const wrongs = shuffle(intervals.filter(i => i.name !== interval.name)).slice(0, 3);
+    const opts = shuffle([interval, ...wrongs]);
+
+    const grid = document.getElementById("options");
+    grid.innerHTML = "";
+    opts.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.className = "opt-btn";
+      btn.innerHTML = `<strong>${opt.name}</strong><br><span style="font-size:11px;color:var(--text-muted)">${opt.semitones} halve tonen</span>`;
+      btn.onclick = () => checkAnswer(opt.name, btn);
+      grid.appendChild(btn);
+    });
+
+  } else {
+    // "find the note" mode: given root + interval name, which second note?
+    let rootIdx, interval, secondIdx;
+    let attempts = 0;
+    do {
+      rootIdx = Math.floor(Math.random() * (NOTES.length - 2));
+      interval = intervals.filter(i => i.steps > 0)[Math.floor(Math.random() * intervals.filter(i => i.steps > 0).length)];
+      secondIdx = rootIdx + interval.steps;
+      attempts++;
+    } while (secondIdx >= NOTES.length && attempts < 50);
+
+    if (secondIdx >= NOTES.length) { nextQuestion(); return; }
+
+    const actualSemitones = NOTES[secondIdx].semitone - NOTES[rootIdx].semitone;
+    if (interval.short !== "TT" && actualSemitones !== interval.semitones) {
+      nextQuestion(); return;
+    }
+
+    currentAnswer = NOTES[secondIdx].name + (NOTES[secondIdx].oct === 5 ? " (hoog)" : "");
+    const correctNoteName = NOTES[secondIdx].name;
+    const correctNoteOct = NOTES[secondIdx].oct;
+
+    document.getElementById("q-type-badge").textContent = "Vind de tweede noot";
+    document.getElementById("q-label").textContent =
+      `Vanaf ${NOTES[rootIdx].name}: welke noot is een ${interval.name} hoger?`;
+
+    drawStaff(rootIdx, secondIdx, false);
+
+    // Options: note names, pick wrong ones (different step positions)
+    const allPossible = [];
+    for (let i = 1; i < NOTES.length; i++) {
+      if (i !== secondIdx) {
+        const label = NOTES[i].name + (NOTES[i].oct === 5 ? " (hoog)" : "");
+        allPossible.push(label);
+      }
+    }
+    const wrongs = shuffle(allPossible).slice(0, 3);
+    const correctLabel = correctNoteName + (correctNoteOct === 5 ? " (hoog)" : "");
+    const opts = shuffle([correctLabel, ...wrongs]);
+
+    const grid = document.getElementById("options");
+    grid.innerHTML = "";
+    opts.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.className = "opt-btn";
+      btn.textContent = opt;
+      btn.onclick = () => checkAnswer(opt, btn);
+      grid.appendChild(btn);
+    });
+
+    currentAnswer = correctLabel;
+  }
+
+  document.getElementById("progress").textContent = `Vraag ${qCount}`;
+}
+
+function checkAnswer(chosen, btn) {
+  if (answered) return;
+  answered = true;
+
+  const fb = document.getElementById("feedback");
+  const isCorrect = chosen === currentAnswer;
+
+  document.querySelectorAll(".opt-btn").forEach(b => {
+    b.disabled = true;
+    if (b.textContent.trim() === currentAnswer || b.innerHTML.includes(`<strong>${currentAnswer}</strong>`)) {
+      b.classList.add("correct");
+    }
+  });
+
+  if (isCorrect) {
+    correct++; streak++;
+    fb.className = "feedback correct";
+    fb.textContent = "✓ Juist!";
+  } else {
+    wrong++; streak = 0;
+    btn.classList.add("wrong");
+    fb.className = "feedback wrong";
+    fb.textContent = `✗ Fout. Het juiste antwoord is: ${currentAnswer}`;
+  }
+
+  fb.style.display = "block";
+  document.getElementById("next-btn").style.display = "block";
+  document.getElementById("correct-count").textContent = correct;
+  document.getElementById("wrong-count").textContent = wrong;
+  document.getElementById("streak-count").textContent = streak;
+}
+
+function toggleRef() {
+  const el = document.getElementById("ref-table");
+  el.classList.toggle("open");
+  document.querySelector(".ref-toggle button").textContent =
+    el.classList.contains("open") ? "🔼 Verberg lijst" : "📋 Toon intervallenlijst";
+}
+
+nextQuestion();
+</script>
+<footer style="text-align:center; padding: 16px; font-size: 0.85em; color: #888;">
+  <a href="index.html" style="color: inherit; text-decoration: none; margin-right: 1rem;">← Terug</a>
+  &trade; Jens Mertens
+</footer>
+</body>
+</html>

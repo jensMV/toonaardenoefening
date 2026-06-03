@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toonaarden & Voortekeningen — Oefeningen</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f0e8;
+      --surface: #fdfaf5;
+      --surface2: #f0ebe0;
+      --border: rgba(80,60,30,0.15);
+      --border-strong: rgba(80,60,30,0.3);
+      --text: #2a1f0e;
+      --text-muted: #7a6a50;
+      --text-faint: #b0a080;
+      --accent: #8b4513;
+      --accent-light: #f5e6d3;
+      --green: #2d6a4f;
+      --green-light: #d8f3dc;
+      --red: #9b1c1c;
+      --red-light: #fde8e8;
+      --blue: #1a3a6b;
+      --blue-light: #dbeafe;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 4rem;
+    }
+
+    /* Subtle staff lines background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 28px,
+        rgba(80,60,30,0.06) 28px,
+        rgba(80,60,30,0.06) 29px
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header .clef {
+      font-size: 72px;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+      display: block;
+      opacity: 0.75;
+    }
+
+    header h1 {
+      font-family: 'Lora', serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    header p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Score bar */
+    .score-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .score-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .score-num {
+      font-family: 'Lora', serif;
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .score-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Mode tabs */
+    .mode-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1.25rem;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 4px;
+      border: 0.5px solid var(--border);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 8px 6px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-family: 'Source Sans 3', sans-serif;
+      font-weight: 400;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .tab-btn.active {
+      background: var(--surface);
+      color: var(--accent);
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* Question card */
+    .question-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1.75rem;
+      box-shadow: 0 2px 12px rgba(80,50,10,0.07);
+    }
+
+    .type-badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+      background: var(--accent-light);
+      color: var(--accent);
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .question-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .question-text {
+      font-family: 'Lora', serif;
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+      line-height: 1.3;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .opt-btn {
+      padding: 12px 14px;
+      border: 0.5px solid var(--border-strong);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Source Sans 3', sans-serif;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.12s, border-color 0.12s;
+      line-height: 1.3;
+    }
+
+    .opt-btn:hover:not(:disabled) {
+      background: var(--surface2);
+    }
+
+    .opt-btn.correct {
+      background: var(--green-light);
+      border-color: var(--green);
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .opt-btn.wrong {
+      background: var(--red-light);
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .opt-btn:disabled { cursor: default; }
+
+    .feedback {
+      margin-top: 1rem;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      display: none;
+    }
+
+    .feedback.correct {
+      background: var(--green-light);
+      color: var(--green);
+    }
+
+    .feedback.wrong {
+      background: var(--red-light);
+      color: var(--red);
+    }
+
+    .next-btn {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 12px;
+      border: 0.5px solid var(--border-strong);
+      border-radius: 8px;
+      background: var(--text);
+      color: var(--bg);
+      font-size: 15px;
+      font-family: 'Source Sans 3', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      display: none;
+    }
+
+    .next-btn:hover { opacity: 0.85; }
+
+    .progress {
+      font-size: 12px;
+      color: var(--text-faint);
+      text-align: center;
+      margin-top: 1rem;
+      letter-spacing: 0.5px;
+    }
+
+    /* Reference table toggle */
+    .ref-toggle {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .ref-toggle button {
+      font-size: 13px;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: 'Source Sans 3', sans-serif;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .ref-table-wrap {
+      margin-top: 1rem;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: none;
+    }
+
+    .ref-table-wrap.open { display: block; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      background: var(--surface2);
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    td {
+      padding: 9px 14px;
+      border-bottom: 0.5px solid var(--border);
+      color: var(--text);
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:nth-child(even) td { background: var(--bg); }
+
+    .sep-row td {
+      background: var(--accent-light);
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="clef">𝄞</span>
+    <h1>Toonaarden & Voortekeningen</h1>
+    <p>Muzikale oefeningen — Belgische notatie</p>
+  </header>
+
+  <div class="score-bar">
+    <div class="score-card"><div class="score-num" id="correct-count">0</div><div class="score-lbl">Juist</div></div>
+    <div class="score-card"><div class="score-num" id="wrong-count">0</div><div class="score-lbl">Fout</div></div>
+    <div class="score-card"><div class="score-num" id="streak-count">0</div><div class="score-lbl">Reeks</div></div>
+  </div>
+
+  <div class="mode-tabs">
+    <button class="tab-btn active" onclick="setMode('both')">Gemengd</button>
+    <button class="tab-btn" onclick="setMode('sig2key')">Voortekening → toonaard</button>
+    <button class="tab-btn" onclick="setMode('key2sig')">Toonaard → voortekening</button>
+  </div>
+
+  <div class="question-card">
+    <div class="type-badge" id="q-type-badge"></div>
+    <div class="question-label" id="q-label"></div>
+    <div class="question-text" id="q-text"></div>
+    <div class="options-grid" id="options"></div>
+    <div id="feedback" class="feedback"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">Volgende vraag →</button>
+  </div>
+  <div class="progress" id="progress"></div>
+
+  <div class="ref-toggle">
+    <button onclick="toggleRef()">📋 Toon referentietabel</button>
+  </div>
+  <div class="ref-table-wrap" id="ref-table">
+    <table>
+      <thead>
+        <tr><th>Voortekening</th><th>Majeur</th><th>Mineur</th></tr>
+      </thead>
+      <tbody id="ref-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const data = [
+  { sig: "0 kruisen/mollen", majeur: "Do", mineur: "La" },
+  { sig: "1 kruis (Fa#)", majeur: "Sol", mineur: "Mi" },
+  { sig: "2 kruisen (Fa#, Do#)", majeur: "Re", mineur: "Si" },
+  { sig: "3 kruisen (Fa#, Do#, Sol#)", majeur: "La", mineur: "Fa#" },
+  { sig: "4 kruisen (Fa#, Do#, Sol#, Re#)", majeur: "Mi", mineur: "Do#" },
+  { sig: "5 kruisen (Fa#, Do#, Sol#, Re#, La#)", majeur: "Si", mineur: "Sol#" },
+  { sig: "6 kruisen (Fa#, Do#, Sol#, Re#, La#, Mi#)", majeur: "Fa#", mineur: "Re#" },
+  { sig: "7 kruisen", majeur: "Do#", mineur: "La#" },
+  { sig: "1 mol (Sib)", majeur: "Fa", mineur: "Re" },
+  { sig: "2 mollen (Sib, Mib)", majeur: "Sib", mineur: "Sol" },
+  { sig: "3 mollen (Sib, Mib, Lab)", majeur: "Mib", mineur: "Do" },
+  { sig: "4 mollen (Sib, Mib, Lab, Reb)", majeur: "Lab", mineur: "Fa" },
+  { sig: "5 mollen (Sib, Mib, Lab, Reb, Solb)", majeur: "Reb", mineur: "Sib" },
+  { sig: "6 mollen (Sib, Mib, Lab, Reb, Solb, Dob)", majeur: "Solb", mineur: "Mib" },
+  { sig: "7 mollen", majeur: "Dob", mineur: "Lab" },
+];
+
+// Build reference table
+const tbody = document.getElementById("ref-tbody");
+const kruisData = data.slice(0, 8);
+const molData = data.slice(8);
+
+const sepRow1 = document.createElement("tr");
+sepRow1.className = "sep-row";
+sepRow1.innerHTML = '<td colspan="3">Kruisen</td>';
+tbody.appendChild(sepRow1);
+
+kruisData.forEach(d => {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td>${d.sig}</td><td>${d.majeur} majeur</td><td>${d.mineur} mineur</td>`;
+  tbody.appendChild(tr);
+});
+
+const sepRow2 = document.createElement("tr");
+sepRow2.className = "sep-row";
+sepRow2.innerHTML = '<td colspan="3">Mollen</td>';
+tbody.appendChild(sepRow2);
+
+molData.forEach(d => {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td>${d.sig}</td><td>${d.majeur} majeur</td><td>${d.mineur} mineur</td>`;
+  tbody.appendChild(tr);
+});
+
+function toggleRef() {
+  const el = document.getElementById("ref-table");
+  el.classList.toggle("open");
+  const btn = document.querySelector(".ref-toggle button");
+  btn.textContent = el.classList.contains("open") ? "🔼 Verberg tabel" : "📋 Toon referentietabel";
+}
+
+let mode = "both";
+let correct = 0, wrong = 0, streak = 0;
+let qCount = 0;
+let currentAnswer = "";
+let answered = false;
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll(".tab-btn").forEach((b, i) => {
+    b.classList.toggle("active", ["both","sig2key","key2sig"][i] === m);
+  });
+  nextQuestion();
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function pickWrong(correct, pool, n) {
+  return shuffle(pool.filter(x => x !== correct)).slice(0, n);
+}
+
+function nextQuestion() {
+  answered = false;
+  qCount++;
+  const fb = document.getElementById("feedback");
+  fb.style.display = "none";
+  document.getElementById("next-btn").style.display = "none";
+
+  const entry = data[Math.floor(Math.random() * data.length)];
+  const isMajeur = Math.random() < 0.5;
+
+  let questionType = mode === "both"
+    ? (Math.random() < 0.5 ? "sig2key" : "key2sig")
+    : mode;
+
+  let qLabel, qText, answer, optionPool, badge;
+
+  if (questionType === "sig2key") {
+    badge = "Voortekening → toonaard";
+    if (isMajeur) {
+      qLabel = "Welke majeurtonaard heeft deze voortekening?";
+      qText = entry.sig;
+      answer = entry.majeur + " majeur";
+      optionPool = data.map(d => d.majeur + " majeur");
+    } else {
+      qLabel = "Welke mineurtonaard heeft deze voortekening?";
+      qText = entry.sig;
+      answer = entry.mineur + " mineur";
+      optionPool = data.map(d => d.mineur + " mineur");
+    }
+  } else {
+    badge = "Toonaard → voortekening";
+    const key = isMajeur ? entry.majeur + " majeur" : entry.mineur + " mineur";
+    qLabel = "Hoeveel kruisen of mollen heeft deze toonaard?";
+    qText = key;
+    answer = entry.sig;
+    optionPool = data.map(d => d.sig);
+  }
+
+  currentAnswer = answer;
+  const opts = shuffle([answer, ...pickWrong(answer, optionPool, 3)]);
+
+  document.getElementById("q-type-badge").textContent = badge;
+  document.getElementById("q-label").textContent = qLabel;
+  document.getElementById("q-text").textContent = qText;
+  document.getElementById("progress").textContent = `Vraag ${qCount}`;
+
+  const grid = document.getElementById("options");
+  grid.innerHTML = "";
+  opts.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "opt-btn";
+    btn.textContent = opt;
+    btn.onclick = () => checkAnswer(opt, btn);
+    grid.appendChild(btn);
+  });
+}
+
+function checkAnswer(chosen, btn) {
+  if (answered) return;
+  answered = true;
+
+  const fb = document.getElementById("feedback");
+  const isCorrect = chosen === currentAnswer;
+
+  document.querySelectorAll(".opt-btn").forEach(b => {
+    b.disabled = true;
+    if (b.textContent === currentAnswer) b.classList.add("correct");
+  });
+
+  if (isCorrect) {
+    correct++; streak++;
+    fb.className = "feedback correct";
+    fb.textContent = "✓ Juist!";
+  } else {
+    wrong++; streak = 0;
+    btn.classList.add("wrong");
+    fb.className = "feedback wrong";
+    fb.textContent = `✗ Fout. Het juiste antwoord is: ${currentAnswer}`;
+  }
+
+  fb.style.display = "block";
+  document.getElementById("next-btn").style.display = "block";
+
+  document.getElementById("correct-count").textContent = correct;
+  document.getElementById("wrong-count").textContent = wrong;
+  document.getElementById("streak-count").textContent = streak;
+}
+
+nextQuestion();
+</script>
+<footer style="text-align:center; padding: 16px; font-size: 0.85em; color: #888;">
+  <a href="index.html" style="color: inherit; text-decoration: none; margin-right: 1rem;">← Terug</a>
+  &trade; Jens Mertens
+</footer>
+</body>
+</html>
