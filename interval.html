@@ -79,6 +79,14 @@ svg.staff { overflow: visible; }
 
 .progress { font-size: 12px; color: var(--text-faint); text-align: center; margin-top: 1rem; letter-spacing: 0.5px; }
 
+.toggle-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; font-size: 13px; color: var(--text-muted); }
+.toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--border-strong); border-radius: 20px; transition: background 0.2s; }
+.toggle-slider::before { content: ''; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
+.toggle-switch input:checked + .toggle-slider { background: var(--accent); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(16px); }
+
 /* Ref table */
 .ref-toggle { margin-top: 1.5rem; text-align: center; }
 .ref-toggle button { font-size: 13px; color: var(--text-muted); background: none; border: none; cursor: pointer; font-family: 'Source Sans 3', sans-serif; text-decoration: underline; text-underline-offset: 3px; }
@@ -116,6 +124,14 @@ tr:nth-child(even) td { background: var(--bg); }
     <button class="level-btn active" id="mode-btn-both" onclick="setMode('both')">Gemengd</button>
     <button class="level-btn" id="mode-btn-name" onclick="setMode('name')">Benoem interval</button>
     <button class="level-btn" id="mode-btn-find" onclick="setMode('find')">Vind de noot</button>
+  </div>
+
+  <div class="toggle-bar">
+    <label class="toggle-switch">
+      <input type="checkbox" id="all-options-toggle" onchange="setAllOptions(this.checked)">
+      <span class="toggle-slider"></span>
+    </label>
+    <span>Alle antwoorden tonen (geen gokken)</span>
   </div>
 
   <div class="question-card">
@@ -361,6 +377,12 @@ let questionMode = "both";
 let correct = 0, wrong = 0, streak = 0, qCount = 0;
 let answered = false;
 let currentAnswer = "";
+let allOptions = false;
+
+function setAllOptions(val) {
+  allOptions = val;
+  nextQuestion();
+}
 
 function setLevel(l) {
   level = l;
@@ -414,8 +436,9 @@ function nextQuestion() {
 
     drawStaff(root, secondNote, true);
 
-    const wrongs4 = shuffle(intervals.filter(i => i.name !== interval.name)).slice(0, 3);
-    const opts4 = shuffle([interval, ...wrongs4]);
+    const opts4 = allOptions
+      ? shuffle(intervals)
+      : shuffle([interval, ...shuffle(intervals.filter(i => i.name !== interval.name)).slice(0, 3)]);
     const grid4 = document.getElementById("options");
     grid4.innerHTML = "";
     opts4.forEach(opt => {
@@ -464,9 +487,9 @@ function nextQuestion() {
 
     drawStaff(NOTES[rootIdx], NOTES[secondIdx], true);
 
-    // Options: correct + 3 wrong
-    const wrongs = shuffle(intervals.filter(i => i.name !== interval.name)).slice(0, 3);
-    const opts = shuffle([interval, ...wrongs]);
+    const opts = allOptions
+      ? shuffle(intervals)
+      : shuffle([interval, ...shuffle(intervals.filter(i => i.name !== interval.name)).slice(0, 3)]);
 
     const grid = document.getElementById("options");
     grid.innerHTML = "";
@@ -514,9 +537,10 @@ function nextQuestion() {
         allPossible.push(label);
       }
     }
-    const wrongs = shuffle(allPossible).slice(0, 3);
     const correctLabel = correctNoteName + (correctNoteOct === 5 ? " (hoog)" : "");
-    const opts = shuffle([correctLabel, ...wrongs]);
+    const opts = allOptions
+      ? shuffle([correctLabel, ...allPossible])
+      : shuffle([correctLabel, ...shuffle(allPossible).slice(0, 3)]);
 
     const grid = document.getElementById("options");
     grid.innerHTML = "";

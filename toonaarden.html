@@ -338,6 +338,21 @@
       text-transform: uppercase;
       padding: 5px 14px;
     }
+
+    .toggle-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1rem;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--border-strong); border-radius: 20px; transition: background 0.2s; }
+    .toggle-slider::before { content: ''; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
+    .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(16px); }
   </style>
 </head>
 <body>
@@ -358,6 +373,14 @@
     <button class="tab-btn active" onclick="setMode('both')">Gemengd</button>
     <button class="tab-btn" onclick="setMode('sig2key')">Voortekening → toonaard</button>
     <button class="tab-btn" onclick="setMode('key2sig')">Toonaard → voortekening</button>
+  </div>
+
+  <div class="toggle-bar">
+    <label class="toggle-switch">
+      <input type="checkbox" id="all-options-toggle" onchange="setAllOptions(this.checked)">
+      <span class="toggle-slider"></span>
+    </label>
+    <span>Alle antwoorden tonen (geen gokken)</span>
   </div>
 
   <div class="question-card">
@@ -441,6 +464,12 @@ let correct = 0, wrong = 0, streak = 0;
 let qCount = 0;
 let currentAnswer = "";
 let answered = false;
+let allOptions = false;
+
+function setAllOptions(val) {
+  allOptions = val;
+  nextQuestion();
+}
 
 function setMode(m) {
   mode = m;
@@ -502,7 +531,9 @@ function nextQuestion() {
   }
 
   currentAnswer = answer;
-  const opts = shuffle([answer, ...pickWrong(answer, optionPool, 3)]);
+  const opts = allOptions
+    ? shuffle(optionPool)
+    : shuffle([answer, ...pickWrong(answer, optionPool, 3)]);
 
   document.getElementById("q-type-badge").textContent = badge;
   document.getElementById("q-label").textContent = qLabel;
