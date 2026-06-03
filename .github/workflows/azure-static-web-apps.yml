@@ -21,7 +21,7 @@ jobs:
           lfs: false
 
       - name: Prepare app folder
-        run: mkdir -p app && cp index.html app/
+        run: mkdir -p app && cp *.html app/
 
       - name: Build And Deploy
         id: builddeploy
