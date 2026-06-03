@@ -87,6 +87,11 @@ svg.staff { overflow: visible; }
     <div class="score-card"><div class="score-num" id="streak-count">0</div><div class="score-lbl">Reeks</div></div>
   </div>
 
+  <div class="level-tabs" id="niveau-tabs">
+    <button class="level-btn active" onclick="setNiveau(1)">Niveau 1<br><small style="font-size:10px;opacity:0.7">Losse akkoorden</small></button>
+    <button class="level-btn"        onclick="setNiveau(2)">Niveau 2<br><small style="font-size:10px;opacity:0.7">7 trappen</small></button>
+  </div>
+
   <div class="level-tabs">
     <button class="level-btn active" id="mode-btn-both"   onclick="setMode('both')">Gemengd</button>
     <button class="level-btn"        id="mode-btn-herken" onclick="setMode('herken')">Herken akkoord</button>
@@ -144,7 +149,32 @@ const CHORDS = [
   { name: "La mineur",   notes: [{name:"La",   staffPos:5,  accidental:null}, {name:"Do",   staffPos:7,  accidental:null}, {name:"Mi",   staffPos:9,  accidental:null}] },
   { name: "Sib mineur",  notes: [{name:"Sib",  staffPos:6,  accidental:"b"},  {name:"Reb",  staffPos:8,  accidental:"b"}, {name:"Fa",   staffPos:10, accidental:null}] },
   { name: "Si mineur",   notes: [{name:"Si",   staffPos:6,  accidental:null}, {name:"Re",   staffPos:8,  accidental:null}, {name:"Fa#",  staffPos:10, accidental:"#"}]  },
+  // ── VERMINDERD ──
+  { name: "Si verminderd",   notes: [{name:"Si",   staffPos:6, accidental:null}, {name:"Re",  staffPos:8, accidental:null}, {name:"Fa",   staffPos:10, accidental:null}] },
+  { name: "Fa# verminderd",  notes: [{name:"Fa#",  staffPos:3, accidental:"#"}, {name:"La",  staffPos:5, accidental:null}, {name:"Do",   staffPos:7,  accidental:null}] },
+  { name: "Do# verminderd",  notes: [{name:"Do#",  staffPos:0, accidental:"#"}, {name:"Mi",  staffPos:2, accidental:null}, {name:"Sol",  staffPos:4,  accidental:null}] },
+  { name: "Sol# verminderd", notes: [{name:"Sol#", staffPos:4, accidental:"#"}, {name:"Si",  staffPos:6, accidental:null}, {name:"Re",   staffPos:8,  accidental:null}] },
+  { name: "Re# verminderd",  notes: [{name:"Re#",  staffPos:1, accidental:"#"}, {name:"Fa#", staffPos:3, accidental:"#"}, {name:"La",   staffPos:5,  accidental:null}] },
+  { name: "Mi verminderd",   notes: [{name:"Mi",   staffPos:2, accidental:null}, {name:"Sol", staffPos:4, accidental:null}, {name:"Sib",  staffPos:6,  accidental:"b"}]  },
+  { name: "La verminderd",   notes: [{name:"La",   staffPos:5, accidental:null}, {name:"Do",  staffPos:7, accidental:null}, {name:"Mib",  staffPos:9,  accidental:"b"}]  },
+  { name: "Re verminderd",   notes: [{name:"Re",   staffPos:1, accidental:null}, {name:"Fa",  staffPos:3, accidental:null}, {name:"Lab",  staffPos:5,  accidental:"b"}]  },
+  { name: "Sol verminderd",  notes: [{name:"Sol",  staffPos:4, accidental:null}, {name:"Sib", staffPos:6, accidental:"b"}, {name:"Reb",  staffPos:8,  accidental:"b"}]  },
 ];
+
+// De 7 toonaardeigen akkoorden (trappen I–VII) voor 9 veelgebruikte toonaarden
+const KEY_CHORDS = {
+  "Do majeur":  ["Do majeur",  "Re mineur",  "Mi mineur",   "Fa majeur",  "Sol majeur", "La mineur",   "Si verminderd"],
+  "Sol majeur": ["Sol majeur", "La mineur",  "Si mineur",   "Do majeur",  "Re majeur",  "Mi mineur",   "Fa# verminderd"],
+  "Re majeur":  ["Re majeur",  "Mi mineur",  "Fa# mineur",  "Sol majeur", "La majeur",  "Si mineur",   "Do# verminderd"],
+  "La majeur":  ["La majeur",  "Si mineur",  "Do# mineur",  "Re majeur",  "Mi majeur",  "Fa# mineur",  "Sol# verminderd"],
+  "Mi majeur":  ["Mi majeur",  "Fa# mineur", "Sol# mineur", "La majeur",  "Si majeur",  "Do# mineur",  "Re# verminderd"],
+  "Fa majeur":  ["Fa majeur",  "Sol mineur", "La mineur",   "Sib majeur", "Do majeur",  "Re mineur",   "Mi verminderd"],
+  "Sib majeur": ["Sib majeur", "Do mineur",  "Re mineur",   "Mib majeur", "Fa majeur",  "Sol mineur",  "La verminderd"],
+  "Mib majeur": ["Mib majeur", "Fa mineur",  "Sol mineur",  "Lab majeur", "Sib majeur", "Do mineur",   "Re verminderd"],
+  "Lab majeur": ["Lab majeur", "Sib mineur", "Do mineur",   "Reb majeur", "Mib majeur", "Fa mineur",   "Sol verminderd"],
+};
+const DEGREE_LABELS = ["I", "II", "III", "IV", "V", "VI", "VII"];
+const KEY_NAMES = Object.keys(KEY_CHORDS);
 
 const CHROMATIC_SORT = {
   "Do":0, "Do#":1, "Reb":1.1, "Re":2, "Mib":3, "Re#":3.1,
@@ -153,8 +183,9 @@ const CHROMATIC_SORT = {
 };
 
 function chordSortKey(name) {
-  const root = name.replace(/ (majeur|mineur)$/, "");
-  return (CHROMATIC_SORT[root] ?? 99) * 10 + (name.includes("majeur") ? 0 : 1);
+  const root = name.replace(/ (majeur|mineur|verminderd)$/, "");
+  const type = name.includes("majeur") ? 0 : name.includes("mineur") ? 1 : 2;
+  return (CHROMATIC_SORT[root] ?? 99) * 10 + type;
 }
 
 function noteString(chord) {
@@ -251,11 +282,18 @@ function drawChordOnStaff(chord) {
 }
 
 // State
+let niveau = 1;
 let questionMode = "both";
 let correct = 0, wrong = 0, streak = 0, qCount = 0;
 let answered = false;
 let currentAnswer = "";
 let allOptions = false;
+
+function setNiveau(n) {
+  niveau = n;
+  document.querySelectorAll("#niveau-tabs .level-btn").forEach((b, i) => b.classList.toggle("active", i + 1 === n));
+  nextQuestion();
+}
 
 function setMode(m) {
   questionMode = m;
@@ -285,8 +323,44 @@ function nextQuestion() {
   document.getElementById("feedback").style.display = "none";
   document.getElementById("next-btn").style.display = "none";
 
-  const chord = CHORDS[Math.floor(Math.random() * CHORDS.length)];
   const mode = questionMode === "both" ? (Math.random() < 0.5 ? "herken" : "bouw") : questionMode;
+
+  // Niveau 2: 7 trappen van een toonaard
+  if (niveau === 2) {
+    const keyName = KEY_NAMES[Math.floor(Math.random() * KEY_NAMES.length)];
+    const keyChords = KEY_CHORDS[keyName];
+    const degreeIdx = Math.floor(Math.random() * 7);
+    const chordName = keyChords[degreeIdx];
+    const chord = CHORDS.find(c => c.name === chordName);
+    const degreeLabel = DEGREE_LABELS[degreeIdx];
+
+    if (mode === "herken") {
+      document.getElementById("q-type-badge").textContent = "Welke trap?";
+      document.getElementById("q-label").textContent = `Dit akkoord staat in ${keyName}. Welke trap is het?`;
+      document.getElementById("q-text").style.display = "none";
+      document.getElementById("staff-wrap").style.display = "flex";
+      drawChordOnStaff(chord);
+      currentAnswer = degreeLabel;
+      renderOptions([...DEGREE_LABELS]);
+    } else {
+      document.getElementById("q-type-badge").textContent = "Bouw de trap";
+      document.getElementById("q-label").textContent = `Welk akkoord is de ${degreeLabel} trap van ${keyName}?`;
+      document.getElementById("q-text").style.display = "none";
+      document.getElementById("staff-wrap").style.display = "none";
+      currentAnswer = chordName;
+      const opts = allOptions
+        ? [...keyChords]
+        : shuffle([chordName, ...shuffle(CHORDS.map(c => c.name).filter(n => n !== chordName)).slice(0, 3)]);
+      renderOptions(opts);
+    }
+
+    document.getElementById("progress").textContent = `Vraag ${qCount}`;
+    return;
+  }
+
+  // Niveau 1: losse akkoorden (enkel majeur + mineur)
+  const N1_CHORDS = CHORDS.filter(c => !c.name.includes("verminderd"));
+  const chord = N1_CHORDS[Math.floor(Math.random() * N1_CHORDS.length)];
 
   if (mode === "herken") {
     document.getElementById("q-type-badge").textContent = "Herken het akkoord";
@@ -297,7 +371,7 @@ function nextQuestion() {
     drawChordOnStaff(chord);
     currentAnswer = chord.name;
 
-    const allNames = CHORDS.map(c => c.name);
+    const allNames = N1_CHORDS.map(c => c.name);
     const opts = allOptions
       ? [...allNames].sort((a, b) => chordSortKey(a) - chordSortKey(b))
       : shuffle([chord.name, ...shuffle(allNames.filter(n => n !== chord.name)).slice(0, 3)]);
@@ -313,7 +387,7 @@ function nextQuestion() {
 
     currentAnswer = noteString(chord);
 
-    const allNoteStrings = CHORDS.map(c => noteString(c));
+    const allNoteStrings = N1_CHORDS.map(c => noteString(c));
     const opts = allOptions
       ? [...CHORDS].sort((a, b) => chordSortKey(a.name) - chordSortKey(b.name)).map(c => noteString(c))
       : shuffle([currentAnswer, ...shuffle(allNoteStrings.filter(s => s !== currentAnswer)).slice(0, 3)]);
