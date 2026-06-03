@@ -459,6 +459,12 @@ function toggleRef() {
   btn.textContent = el.classList.contains("open") ? "🔼 Verberg tabel" : "📋 Toon referentietabel";
 }
 
+const CHROMATIC_SORT = {
+  "Do": 0, "Do#": 1.0, "Reb": 1.1, "Re": 2, "Mib": 3,
+  "Mi": 4, "Fa": 5, "Fa#": 6.0, "Solb": 6.1, "Sol": 7, "Lab": 8,
+  "La": 9, "Sib": 10, "Si": 11.0, "Dob": 11.1
+};
+
 let mode = "both";
 let correct = 0, wrong = 0, streak = 0;
 let qCount = 0;
@@ -532,7 +538,16 @@ function nextQuestion() {
 
   currentAnswer = answer;
   const opts = allOptions
-    ? shuffle(optionPool)
+    ? (questionType === "sig2key"
+        ? [...optionPool].sort((a, b) => {
+            const nameA = a.replace(/ (majeur|mineur)$/, "");
+            const nameB = b.replace(/ (majeur|mineur)$/, "");
+            return (CHROMATIC_SORT[nameA] ?? 99) - (CHROMATIC_SORT[nameB] ?? 99);
+          })
+        : [...optionPool].sort((a, b) =>
+            data.findIndex(d => d.sig === a) - data.findIndex(d => d.sig === b)
+          )
+      )
     : shuffle([answer, ...pickWrong(answer, optionPool, 3)]);
 
   document.getElementById("q-type-badge").textContent = badge;

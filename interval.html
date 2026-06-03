@@ -437,7 +437,7 @@ function nextQuestion() {
     drawStaff(root, secondNote, true);
 
     const opts4 = allOptions
-      ? shuffle(intervals)
+      ? [...intervals].sort((a, b) => a.semitones - b.semitones)
       : shuffle([interval, ...shuffle(intervals.filter(i => i.name !== interval.name)).slice(0, 3)]);
     const grid4 = document.getElementById("options");
     grid4.innerHTML = "";
@@ -488,7 +488,7 @@ function nextQuestion() {
     drawStaff(NOTES[rootIdx], NOTES[secondIdx], true);
 
     const opts = allOptions
-      ? shuffle(intervals)
+      ? [...intervals].sort((a, b) => a.semitones - b.semitones)
       : shuffle([interval, ...shuffle(intervals.filter(i => i.name !== interval.name)).slice(0, 3)]);
 
     const grid = document.getElementById("options");
@@ -539,7 +539,11 @@ function nextQuestion() {
     }
     const correctLabel = correctNoteName + (correctNoteOct === 5 ? " (hoog)" : "");
     const opts = allOptions
-      ? shuffle([correctLabel, ...allPossible])
+      ? [...new Set([correctLabel, ...allPossible])].sort((a, b) => {
+          const posA = NOTES.findIndex(n => n.name + (n.oct === 5 ? " (hoog)" : "") === a);
+          const posB = NOTES.findIndex(n => n.name + (n.oct === 5 ? " (hoog)" : "") === b);
+          return posA - posB;
+        })
       : shuffle([correctLabel, ...shuffle(allPossible).slice(0, 3)]);
 
     const grid = document.getElementById("options");
