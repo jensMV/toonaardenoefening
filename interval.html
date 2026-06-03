@@ -106,7 +106,7 @@ tr:nth-child(even) td { background: var(--bg); }
   </div>
 
   <div class="level-tabs">
-    <button class="level-btn active" onclick="setLevel(1)">Niveau 1<br><small style="font-size:10px;opacity:0.7">Priem–Kwart</small></button>
+    <button class="level-btn active" onclick="setLevel(1)">Niveau 1<br><small style="font-size:10px;opacity:0.7">Prime–Kwart</small></button>
     <button class="level-btn" onclick="setLevel(2)">Niveau 2<br><small style="font-size:10px;opacity:0.7">t.e.m. Sixt</small></button>
     <button class="level-btn" onclick="setLevel(3)">Niveau 3<br><small style="font-size:10px;opacity:0.7">Alle intervallen</small></button>
   </div>
@@ -133,7 +133,7 @@ tr:nth-child(even) td { background: var(--bg); }
     <table>
       <thead><tr><th>Interval</th><th>Halve tonen</th></tr></thead>
       <tbody>
-        <tr><td>Reine priem (P1)</td><td>0</td></tr>
+        <tr><td>Reine prime (P1)</td><td>0</td></tr>
         <tr><td>Kleine secunde (m2)</td><td>1</td></tr>
         <tr><td>Grote secunde (M2)</td><td>2</td></tr>
         <tr><td>Kleine terts (m3)</td><td>3</td></tr>
@@ -174,14 +174,14 @@ const NOTES = [
 // Intervals per level
 const INTERVALS_BY_LEVEL = {
   1: [
-    { name: "Reine priem",    short: "P1",  steps: 0, semitones: 0 },
+    { name: "Reine prime",    short: "P1",  steps: 0, semitones: 0 },
     { name: "Grote secunde",  short: "M2",  steps: 1, semitones: 2 },
     { name: "Kleine terts",   short: "m3",  steps: 2, semitones: 3 },
     { name: "Grote terts",    short: "M3",  steps: 2, semitones: 4 },
     { name: "Reine kwart",    short: "P4",  steps: 3, semitones: 5 },
   ],
   2: [
-    { name: "Reine priem",    short: "P1",  steps: 0, semitones: 0 },
+    { name: "Reine prime",    short: "P1",  steps: 0, semitones: 0 },
     { name: "Kleine secunde", short: "m2",  steps: 1, semitones: 1 },
     { name: "Grote secunde",  short: "M2",  steps: 1, semitones: 2 },
     { name: "Kleine terts",   short: "m3",  steps: 2, semitones: 3 },
@@ -192,7 +192,7 @@ const INTERVALS_BY_LEVEL = {
     { name: "Grote sixt",     short: "M6",  steps: 5, semitones: 9 },
   ],
   3: [
-    { name: "Reine priem",    short: "P1",  steps: 0, semitones: 0 },
+    { name: "Reine prime",    short: "P1",  steps: 0, semitones: 0 },
     { name: "Kleine secunde", short: "m2",  steps: 1, semitones: 1 },
     { name: "Grote secunde",  short: "M2",  steps: 1, semitones: 2 },
     { name: "Kleine terts",   short: "m3",  steps: 2, semitones: 3 },
